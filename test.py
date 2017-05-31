@@ -1,5 +1,5 @@
 import configparser
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from pprint import pprint
 import time
 from pymongo import MongoClient
@@ -7,12 +7,15 @@ from tweet import *
 import json
 
 
-def create_and_store_tweets(task_nr):
-    print("Started task", task_number, "processing:", tasks[task_nr][1].__len__(), "tweets")
-    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer).__dict__ for tweet_line in tasks[task_nr][1]]
+def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config):
+    print("Started task", "processing:", lines.__len__(), "tweets")
+    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer).__dict__ for tweet_line in lines]
+
+    client = MongoClient(config['database']['host'], int(config['database']['port']))
+    db = client[config['database']['db']]
+    tweets_collection = db[config['tweets']['collection_name']]
     tweets_collection.insert(tweets)
-    print("Processed", tasks[task_nr][1].__len__(), "tweets")
-    tasks[task_nr] = ()
+    print("Processed", lines.__len__(), "tweets")
 
 
 if __name__ == "__main__":
@@ -24,12 +27,12 @@ if __name__ == "__main__":
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
-
     tweets_collection = db[config['tweets']['collection_name']]
     tweets_collection.drop()
+
     batch_size = int(config['tweets']['batch_size'])
     concurrent_tasks = int(config['tweets']['concurrent_tasks'])
-    executor = ThreadPoolExecutor(max_workers=concurrent_tasks)
+    executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
     word_net_lemmatizer = WordNetLemmatizer()
     word_net_lemmatizer.lemmatize("dogs")
 
@@ -58,8 +61,9 @@ if __name__ == "__main__":
                 lines += [line]
                 if tweets_in_batch == batch_size:
                     submitted_lines = lines[:]
-                    tasks += [(task_number, submitted_lines)]
-                    futures += [executor.submit(create_and_store_tweets, task_number)]
+
+                    futures += [executor.submit(create_and_store_tweets, submitted_lines, contractions, stop_words,
+                                                word_net_lemmatizer, config)]
                     tweets_in_batch = 0
                     lines = []
                     task_number += 1
@@ -70,7 +74,7 @@ if __name__ == "__main__":
 
     if lines.__len__() > 0:
         submitted_lines = lines[:]
-        tasks += [(task_number, submitted_lines)]
+
         futures += [executor.submit(create_and_store_tweets, task_number)]
 
     for future in futures:
