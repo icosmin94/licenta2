@@ -20,6 +20,7 @@ class Tweet:
         self.words_count = words_count
         self.words_map = words_map
 
+
 def get_wordnet_pos(treebank_tag):
 
     if treebank_tag.startswith('J'):
@@ -34,7 +35,7 @@ def get_wordnet_pos(treebank_tag):
         return wordnet.NOUN
 
 
-def lemmatize(tweet, contractions, stop_words):
+def lemmatize(tweet, contractions, stop_words, word_net_lemmatizer):
     contractionless_words = []
     processed_words = []
     words_map = {}
@@ -57,7 +58,6 @@ def lemmatize(tweet, contractions, stop_words):
 
     tweet.words_count = processed_words.__len__()
     tagged = nltk.pos_tag(processed_words)
-    word_net_lemmatizer = WordNetLemmatizer()
 
     for i in range(processed_words.__len__()):
         lemma = word_net_lemmatizer.lemmatize(tagged[i][0], get_wordnet_pos(tagged[i][1]))
@@ -68,7 +68,7 @@ def lemmatize(tweet, contractions, stop_words):
     tweet.words_map = words_map
 
 
-def create_tweet(tweet_line, contractions, stop_words):
+def create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer):
     parts = re.split(r'[,"\[\]]+', tweet_line)
     author = parts[1]
     age = parts[2]
@@ -78,8 +78,9 @@ def create_tweet(tweet_line, contractions, stop_words):
     date_time = parts[parts.__len__()-1]
     date_time_parts = re.split('[TZ\n]+', date_time)
     raw_text = re.sub(r"[!?.\\<>\[\]()/,*:+~=\-;^\"]+", '', tweet_line[tweet_line.index(parts[6]): tweet_line.index(date_time) - 1])
+    raw_text = re.sub(r"[$]+", " dollar ", raw_text)
 
     tweet = Tweet(author, age, gender, latitude, longitude, date_time_parts[0], date_time_parts[1], raw_text, 0, {})
-    lemmatize(tweet, contractions, stop_words)
+    lemmatize(tweet, contractions, stop_words, word_net_lemmatizer)
     return tweet
 
