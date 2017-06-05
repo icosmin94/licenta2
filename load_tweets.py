@@ -2,9 +2,18 @@ import configparser
 from concurrent.futures import ProcessPoolExecutor
 import time
 import pymongo
+from nltk import WordNetLemmatizer, pprint
 from pymongo import MongoClient
 from tweet import *
 import json
+
+
+def merge_date_hour_dict(dict1, dict2):
+    for date in dict2:
+        if date in dict1:
+            dict1[date] = list(set(dict1[date] + dict2[date]))
+        else:
+            dict1[date] = dict2[date]
 
 
 def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config, task_number):
@@ -16,7 +25,21 @@ def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer
     tweets_collection = db[config['tweets']['collection_name']]
     tweets_collection.insert(tweets)
 
+    date_hour_dict = {}
+
+    for tweet in tweets:
+        date_time = tweet['date_time']
+        parts = re.split(' ', date_time.__str__())
+        if parts[0] not in date_hour_dict:
+            date_hour_dict[parts[0]] = set()
+        date_hour_dict[parts[0]].add(re.split(r":", parts[1])[0])
+
+    for entry in date_hour_dict:
+        date_hour_dict[entry] = list(date_hour_dict[entry])
+
     print("Processed task", task_number, "with :", lines.__len__(), "tweets")
+
+    return date_hour_dict
 
 
 def load_tweets():
@@ -31,10 +54,10 @@ def load_tweets():
     tweets_collection = db[config['tweets']['collection_name']]
     tweets_collection.drop()
     # create index on date
-    tweets_collection.create_index([("date", pymongo.ASCENDING)])
+    tweets_collection.create_index([("date_time", pymongo.ASCENDING)])
 
     batch_size = int(config['tweets']['batch_size'])
-    concurrent_tasks = int(config['tweets']['concurrent_tasks'])
+    concurrent_tasks = int(config['default']['concurrent_tasks'])
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
     word_net_lemmatizer = WordNetLemmatizer()
     word_net_lemmatizer.lemmatize("dogs")
@@ -54,6 +77,7 @@ def load_tweets():
     task_number = 0
     lines = []
     futures = []
+    date_hour_dict = {}
     start = time.time()
     with open(tweetsFile) as fp:
         for line in fp:
@@ -71,7 +95,7 @@ def load_tweets():
                     task_number += 1
                     if task_number % concurrent_tasks == 0:
                         for future in futures:
-                            future.result()
+                            merge_date_hour_dict(date_hour_dict, future.result())
                         futures = []
 
     if lines.__len__() > 0:
@@ -80,8 +104,10 @@ def load_tweets():
                                     word_net_lemmatizer, config, task_number)]
 
     for future in futures:
-        future.result()
+        merge_date_hour_dict(date_hour_dict, future.result())
     end = time.time()
+    date_hour_collection = db[config['tweets']['date_hour_collection_name']]
+    date_hour_collection.insert_one(date_hour_dict)
 
-    print("Processing tweets took: ", end-start)
+    print("Processing tweets took: ", end - start)
 

@@ -1,24 +1,36 @@
 import re
+
+import datetime
 from nltk.corpus import wordnet
 import nltk
-from nltk.stem import WordNetLemmatizer
 
 
 class Tweet:
 
-    def __init__(self, author, age, gender, latitude,
-                 longitude, date, time, raw_text, words_count, words_map):
+    def __init__(self, author="", age=0, gender="None", latitude=0,
+                 longitude=0, date="", time="", raw_text="", words_count=0, words_map={}):
 
         self.author = author
         self.age = age
         self.gender = gender
         self.latitude = latitude
         self.longitude = longitude
-        self.date = date
-        self.time = time
+        if date != "" and time != "":
+            date_parts = re.split('-', date)
+            time_parts = re.split('[:.]+', time)
+            self.date_time = datetime.datetime(year=int(date_parts[0]), month=int(date_parts[1]),
+                                               day=int(date_parts[2]),
+                                               hour=int(time_parts[0]), minute=int(time_parts[1]),
+                                               second=int(time_parts[2]))
         self.raw_text = raw_text
         self.words_count = words_count
         self.words_map = words_map
+
+    @staticmethod
+    def create_tweet(entries):
+        tweet = Tweet()
+        tweet.__dict__.update(entries)
+        return tweet
 
 
 def get_wordnet_pos(treebank_tag):
@@ -53,10 +65,9 @@ def lemmatize(tweet, contractions, stop_words, word_net_lemmatizer):
             the_word = re.sub("'s", '', word)
         else:
             the_word = word
-        if the_word not in stop_words and the_word.__len__() > 1:
+        if the_word.__len__() > 1 and the_word not in stop_words:
             processed_words.extend([the_word])
 
-    tweet.words_count = processed_words.__len__()
     tagged = nltk.pos_tag(processed_words)
 
     for i in range(processed_words.__len__()):
@@ -65,7 +76,10 @@ def lemmatize(tweet, contractions, stop_words, word_net_lemmatizer):
             words_map[lemma] = 0
         words_map[lemma] = words_map[lemma] + 1
 
+    for stop_word in stop_words:
+        words_map.pop(stop_word, None)
     tweet.words_map = words_map
+    tweet.words_count = sum(words_map.values())
 
 
 def create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer):
