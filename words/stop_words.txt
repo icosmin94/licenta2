@@ -34,6 +34,7 @@ few
 for
 from
 further
+go
 get
 have
 he
@@ -52,6 +53,7 @@ is
 it
 its
 itself
+just
 let
 make
 me
