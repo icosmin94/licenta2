@@ -47,7 +47,7 @@ class Topic:
                                                       self.merge_count + word_tuple[1]) / (self.merge_count + 1)
             else:
                 relevant_words_dict[word_tuple[0]] = word_tuple[1]
-        self.relevant_words = sorted(relevant_words_dict.items(), key=lambda x: x[1], reverse=True)[0:9]
+        self.relevant_words = sorted(relevant_words_dict.items(), key=lambda x: x[1], reverse=True)[0:5]
         relevant_tweets_map = {}
         for tweet_tuple in self.relevant_tweets + other_topic.relevant_tweets:
             if tweet_tuple[1] not in relevant_tweets_map:

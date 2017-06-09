@@ -78,14 +78,13 @@ def compute_nmf(config, start_datetime, stop_datetime):
         relevant_words = sorted(relevant_words.items(), key=lambda x: x[1], reverse=True)
 
         # add relevant words
-        topic_object.relevant_words = relevant_words[0:9]
+        topic_object.relevant_words = relevant_words[0:5]
         relevant_tweets_per_topic = [(relevant_tweets[i][index], tweets[i]) for i in range(0, relevant_tweets.__len__())]
         relevant_tweets_per_topic = sorted(relevant_tweets_per_topic, key=lambda x: x[0], reverse=True)
 
         # add relevant tweet ids
         topic_object.relevant_tweets = list(
             map(lambda x: (x[0], x[1]._id), filter(lambda x: x[0] > 0.1, relevant_tweets_per_topic)))
-        print(topic_object.relevant_words)
         topics_list += [topic_object.__dict__]
         index += 1
 
@@ -113,29 +112,14 @@ def create_and_store_topics():
     topic_collection.create_index([("start_datetime", pymongo.ASCENDING)])
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
 
-    date_hour_dict = date_hour_collection.find_one()
-    dates = []
+    date_hour_list = date_hour_collection.find_one()['dates']
+    date_hour_list.sort()
     futures = []
     task_number = 0
 
-    # date parsing
-    for key in date_hour_dict:
-        if key != "_id":
-            dates += [key]
-    dates.sort()
-    date_hour_dict[dates[0]].sort()
-    date_hour_dict[dates[dates.__len__() - 1]].sort(reverse=True)
-
-    current_datetime_parts = re.split('-', dates[0])
-    limit_datetime_parts = re.split('-', dates[dates.__len__() - 1])
-
-    start_datetime = datetime.datetime(year=int(current_datetime_parts[0]), month=int(current_datetime_parts[1]),
-                                       day=int(current_datetime_parts[2]),
-                                       hour=int(date_hour_dict[dates[0]][0]))
+    start_datetime = date_hour_list[0]
     stop_datetime = start_datetime + datetime.timedelta(hours=1)
-    limit_datetime = datetime.datetime(year=int(limit_datetime_parts[0]), month=int(limit_datetime_parts[1]),
-                                       day=int(limit_datetime_parts[2]),
-                                       hour=int(date_hour_dict[dates[dates.__len__() - 1]][0]))
+    limit_datetime = date_hour_list[date_hour_list.__len__() - 1]
 
     # start tf-idf and nmf
     start = time.time()

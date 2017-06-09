@@ -1,10 +1,15 @@
 import configparser
+import operator
 
+import time
+
+import datetime
 from pymongo import MongoClient
-
+import matplotlib.pyplot as plt
 from create_topics import create_and_store_topics
 from load_tweets import load_tweets
 from topics import Topic
+from tweet import Tweet
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
@@ -19,7 +24,12 @@ if __name__ == '__main__':
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     topic_collection = db[config['topics']['topic_collection_name']]
+    tweets_collection = db[config['tweets']['collection_name']]
+    date_hour_collection = db[config['tweets']['date_hour_collection_name']]
+    date_hour_list = date_hour_collection.find_one()['dates']
+    date_hour_list.sort()
 
+    start = time.time()
     topics_cursor = topic_collection.find()
     topics = []
     for topic in topics_cursor:
@@ -32,12 +42,40 @@ if __name__ == '__main__':
         assign_cluster = None
         for cluster in topic_clusters:
             current_result = cluster.cosine_similarity(topic)
-            if current_result > result and current_result > 0.7:
+            if current_result > result and current_result > 0.1:
                 result = current_result
                 assign_cluster = cluster
         if assign_cluster is None:
             topic_clusters += [topic]
         else:
             assign_cluster.merge_with(topic)
-    for topic in topic_clusters:
-        print(topic.relevant_words)
+    plot_index = 1
+    for try_topic in topic_clusters:
+        plt.figure(plot_index)
+        topic_tweet_ids = [tweet_tuple[1] for tweet_tuple in try_topic.relevant_tweets]
+        tweets_cursor = tweets_collection.find({"_id": {"$in": topic_tweet_ids}})
+
+        tweets = []
+        for tweet in tweets_cursor:
+            tweets += [Tweet.create_tweet(tweet)]
+        tweets = sorted(tweets, key=operator.attrgetter('date_time'))
+        date_hour_dict = {}
+        for tweet in tweets:
+            hour = datetime.time(hour=tweet.date_time.hour)
+            date = tweet.date_time.date()
+            date_hour = datetime.datetime.combine(date, hour)
+            if date_hour not in date_hour_dict:
+                date_hour_dict[date_hour] = 0
+            date_hour_dict[date_hour] += 1
+
+        values = [0] * date_hour_list.__len__()
+        for date in date_hour_dict:
+            values[date_hour_list.index(date)] = date_hour_dict[date]
+        plt.plot([x for x in date_hour_list], values, marker='o', linestyle='--')
+        plt.title([word_tuple[0] for word_tuple in try_topic.relevant_words].__str__())
+        plot_index += 1
+
+    plt.show()
+    end = time.time()
+    print("Merging topics took: ", end - start)
+

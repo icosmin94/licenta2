@@ -105,9 +105,19 @@ def load_tweets():
 
     for future in futures:
         merge_date_hour_dict(date_hour_dict, future.result())
+
+    date_hour_list = []
+    for date in date_hour_dict:
+        date_time = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        hours = date_hour_dict[date]
+        for hour in hours:
+            h_time = datetime.time(hour=int(hour))
+            date_hour_list += [datetime.datetime.combine(date_time, h_time)]
+
     end = time.time()
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
-    date_hour_collection.insert_one(date_hour_dict)
+    date_hour_collection.drop()
+    date_hour_collection.insert({"dates": date_hour_list})
 
     print("Processing tweets took: ", end - start)
 
