@@ -1,12 +1,33 @@
 $(document).ready(function () {
     $(document).on("click", "#login", function(){
-        login_signup_show('login')
+        login_signup_show('login');
     });
     $(document).on("click", "#signup", function(){
-        login_signup_show('signup')
+        login_signup_show('signup');
     });
-
+    $(document).on("click", "#logout", function(){
+        logout();
+    });
 });
+
+function logout() {
+    var request = new XMLHttpRequest();
+
+    request.open("POST", "/logout", true);
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    var params = JSON.stringify({'action' : 'logout'});
+
+   request.onreadystatechange = function() {
+        if (request.readyState == 4 && request.status == 200) {
+            console.log(request.responseText);
+            if (request.responseText=="ok") {
+                 window.location.href = "/";
+            }
+        }
+   }
+
+    request.send("jsonData="+params);
+}
 
 function login() {
     $("#error_message").html("");
@@ -29,7 +50,7 @@ function login() {
         if (request.readyState == 4 && request.status == 200) {
             console.log(request.responseText);
             if (request.responseText=="ok") {
-                window.location.href = "/";
+                 window.location.href = "/board";
             } else {
                  $("#error_message").html("Log In failed")
                 $("#error_message").css("visibility", "visible");
@@ -70,7 +91,7 @@ function signup() {
         if (request.readyState == 4 && request.status == 200) {
             console.log(request.responseText);
             if (request.responseText=="ok") {
-                window.location.href = "/";
+                window.location.href = "/board";
             } else {
                  $("#error_message").html("Sign up failed")
                 $("#error_message").css("visibility", "visible");

@@ -61,6 +61,13 @@ body {
 #signup {
     float: right;
 }
+#username{
+    float:right;
+}
+#logout {
+    float: right;
+    margin-right:2%;
+}
 .menu > ul > li:hover {
     background-color: #0033cc;
     background: #0033cc; /* For browsers that do not support gradients */

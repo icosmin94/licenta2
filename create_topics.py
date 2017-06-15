@@ -102,9 +102,6 @@ def create_and_store_topics():
     config = configparser.ConfigParser()
     config.read('./config/config.ini')
 
-    if config['tweets']['load_tweets'].lower() == "true":
-        load_tweets()
-
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]

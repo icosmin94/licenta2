@@ -1,11 +1,17 @@
 import configparser
 
-from flask import Flask, redirect, url_for, request, render_template, make_response
+from flask import Flask, redirect, url_for, request, render_template, make_response, session
 import json
 
 from pymongo import MongoClient
 
 app = Flask(__name__)
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_name', None)
+    return render_template('response.html', message="ok")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -17,7 +23,15 @@ def index():
         if data['action'] == 'signup':
             return render_template('signup_form.html')
     else:
-        return render_template('index.html')
+        if session.get('user_name'):
+            return redirect(url_for('board'))
+        else:
+            return render_template('index.html')
+
+
+@app.route('/board', methods=['POST', 'GET'])
+def board():
+    return render_template('board.html', user=session['user_name'])
 
 
 @app.route('/check_credentials', methods=['POST'])
@@ -33,11 +47,17 @@ def check_credentials():
                 login_id = field['value']
             if field['name'] == 'login_password':
                 login_password = field['value']
+        result = users.find_one({"$and": [{"$or": [{'user_name': login_id}, {'user_email': login_id}]}, {'password': login_password}]})
+        if result is None:
+            return render_template('response.html', message="=error")
+        else:
+            session['user_name'] = result['user_name']
+            return render_template('response.html', message="ok")
     if data['action'] == 'signup':
         form_fields = data['form']
-        signup_email=""
-        signup_username=""
-        signup_password=""
+        signup_email = ""
+        signup_username = ""
+        signup_password = ""
         for field in form_fields:
             if field['name'] == 'signup_email':
                 signup_email = field['value']
@@ -45,21 +65,25 @@ def check_credentials():
                 signup_username = field['value']
             if field['name'] == 'signup_password':
                 signup_password = field['value']
-        result = users.find_one({"$or": [{'user_name': signup_username}, {'user_email': signup_email}]})
+        result = users.find_one({"$or": [{'user_name': signup_username}, {'user_email': signup_email},
+                                         {'user_name': signup_email}, {'user_email': signup_username}]})
         if result is None:
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
+            session['user_name'] = signup_username
             return render_template('response.html', message="ok")
         else:
             return render_template('response.html', message="error")
 
-    return render_template('response.html', message="hfdh")
+    return render_template('response.html', message="error")
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
-    config.read('./config/config.ini')
+    config.read('../config/config.ini')
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     users = db['users']
     users.drop()
 
+    app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
+                     "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
     app.run(debug=True, port=8000)
