@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather');
+@import url('https://fonts.googleapis.com/css?family=Asar');
+@import url('https://fonts.googleapis.com/css?family=Cookie');
+
+#beginning {
+    padding-top: 5px;
+    overflow:auto;
+    margin:0;
+    padding-bottom:5px;
+}
+body {
+    background-color: #f2f2f2;
+}
+.cs_image {
+    height: 80px;
+    width: 180px;
+    float: left;
+    margin-left:10px;
+}
+
+#title {
+    text-align:center;
+    font-family: 'Merriweather', serif;
+    color: black;
+    font-size:35px;
+    padding:5px;
+}
+
+.menu {
+
+    background: #668cff; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#668cff, #000066); /* Standard syntax */
+    width: 100%;
+    z-index: 1;
+}
+.menu > ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    min-width: 350px;
+}
+
+.menu > ul > li {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+}
+.menu > ul > li {
+    display:inline-block;
+    cursor: pointer;
+}
+#login{
+    float:right;
+    margin-right:2%;
+}
+#signup {
+    float: right;
+}
+.menu > ul > li:hover {
+    background-color: #0033cc;
+    background: #0033cc; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#0033cc, #000066); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#0033cc, #000066); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#0033cc, #000066); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#0033cc, #000066); /* Standard syntax */
+}
+.graphs {
+     margin:0 auto;
+     padding:15px;
+     width:60%;
+     min-width: 550px;
+     max-width: 1050px;
+     background-color:#fcfcfc;
+     border: 1px solid #ccc ;
+     border-radius: 10px;
+     min-height:200px;
+     margin-top:30px;
+     display: none;
+}
+.login_form > table, .login_form  td >  input {
+    text-align: center;
+    margin: 0 auto;
+    margin-top:7.5px;
+    margin-bottom:7.5px;
+    width:80%;
+    min-width:200px;
+    max-width:350px;
+    padding-bottom: 6px;
+    padding-top: 6px;
+    border-radius: 4px;
+    font-size:15px;
+    color:black;
+}
+#login_button {
+     cursor: pointer;
+     background: #668cff; /* For browsers that do not support gradients */
+     background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
+     background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
+     background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
+     background: linear-gradient(#668cff, #000066); /* Standard syntax */
+     color: white;
+     border: none;
+
+}
+#login_button:hover {
+    background-color: #0033cc;
+    background: #0033cc; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#0033cc, #000066); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#0033cc, #000066); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#0033cc, #000066); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#0033cc, #000066); /* Standard syntax */
+}
+#login_txt  {
+    font-family: 'Cookie', serif;
+    font-size:30px;
+    padding-bottom:20px;
+}
+.container {
+    padding:0;
+    margin:0 auto;
+    margin-top:50px;
+    width:80%;
+    padding-top:30px;
+    padding-bottom:20px;
+    background-color:#fcfcfc;
+    border: 1px solid #ccc ;
+    border-radius: 10px;
+    max-width:500px;
+    min-width:300px;
+}
+
+
+.signup_form > table, .signup_form  td >  input {
+    text-align: center;
+    margin: 0 auto;
+    margin-top:7.5px;
+    margin-bottom:7.5px;
+    width:80%;
+    min-width:200px;
+    max-width:350px;
+    padding-bottom: 6px;
+    padding-top: 6px;
+    border-radius: 4px;
+    font-size:15px;
+    color:black;
+}
+#signup_button {
+     cursor: pointer;
+     background: #668cff; /* For browsers that do not support gradients */
+     background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
+     background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
+     background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
+     background: linear-gradient(#668cff, #000066); /* Standard syntax */
+     color: white;
+     border: none;
+
+}
+#signup_button:hover {
+    background-color: #0033cc;
+    background: #0033cc; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#0033cc, #000066); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#0033cc, #000066); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#0033cc, #000066); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#0033cc, #000066); /* Standard syntax */
+}
+#signup_txt  {
+    font-family: 'Cookie', serif;
+    font-size:30px;
+    padding-bottom:20px;
+}
+#error_message {
+  visibility: hidden;
+}

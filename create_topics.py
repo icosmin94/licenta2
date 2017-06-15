@@ -19,7 +19,7 @@ def compute_nmf(config, start_datetime, stop_datetime):
     idf = {}
     tweets = []
     nr_topics = int(config['topics']['nr_topics'])
-
+    topic_words_nr = int(config['topics']['topic_words_nr'])
     topics_list = []
 
     # get tweets from db
@@ -68,7 +68,6 @@ def compute_nmf(config, start_datetime, stop_datetime):
     topics = nmf_model.components_
 
     # extract topics and relevant tweets
-    index = 0
     for topic in topics:
         topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime)
         values = topic.tolist()
@@ -78,16 +77,20 @@ def compute_nmf(config, start_datetime, stop_datetime):
         relevant_words = sorted(relevant_words.items(), key=lambda x: x[1], reverse=True)
 
         # add relevant words
-        topic_object.relevant_words = relevant_words[0:5]
-        relevant_tweets_per_topic = [(relevant_tweets[i][index], tweets[i]) for i in range(0, relevant_tweets.__len__())]
-        relevant_tweets_per_topic = sorted(relevant_tweets_per_topic, key=lambda x: x[0], reverse=True)
+        topic_object.relevant_words = relevant_words[0:topic_words_nr]
+        topics_list += [topic_object]
 
-        # add relevant tweet ids
-        topic_object.relevant_tweets = list(
-            map(lambda x: (x[0], x[1]._id), filter(lambda x: x[0] > 0.1, relevant_tweets_per_topic)))
-        topics_list += [topic_object.__dict__]
+    # add relevant tweets
+    index = 0
+    for tweet_per_topic in relevant_tweets:
+        tweet_topic_pairs = [(tweet_per_topic[i], i) for i in range(0, nr_topics)]
+        tweet_topic_pairs = sorted(tweet_topic_pairs,  key=lambda x: x[0], reverse=True)
+        for j in range(0, 4):
+            if tweet_topic_pairs[j][0] > 0.1:
+                topics_list[tweet_topic_pairs[j][1]].relevant_tweets.append((tweet_topic_pairs[j][0], tweets[index]._id))
+
         index += 1
-
+    topics_list = [topic.__dict__ for topic in topics_list]
     topic_collection.insert(topics_list)
 
     print("Processed topics in time interval", start_datetime, "-", stop_datetime, "consisting of", tweets.__len__(),

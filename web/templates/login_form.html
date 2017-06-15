@@ -1,0 +1,29 @@
+<div  class="container">
+        <form class="login_form" onsubmit="event.preventDefault(); login();" method ="POST">
+            <table>
+                <tr>
+                    <td id="login_txt">Log In</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" id="id" name="login_id" placeholder="Email or Username">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="password" id="password" name="login_password" placeholder="Password">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" id="login_button" value="Log In">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="error_message">{{ message }}</div>
+                    </td>
+                </tr>
+                 </table>
+        </form>
+</div>

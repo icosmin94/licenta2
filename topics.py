@@ -2,12 +2,11 @@ from math import sqrt
 
 
 class Topic:
-    def __init__(self, start_datetime="", stop_datetime="", relevant_words=[], relevant_tweets=[]):
+    def __init__(self, start_datetime="", stop_datetime=""):
         self.start_datetime = start_datetime
         self.stop_datetime = stop_datetime
-        self.relevant_words = relevant_words
-        self.relevant_tweets = relevant_tweets
-        self.time_periods = [(start_datetime, stop_datetime)]
+        self.relevant_words = []
+        self.relevant_tweets = []
         self.merge_count = 0
 
     @staticmethod
@@ -38,16 +37,20 @@ class Topic:
 
     def merge_with(self, other_topic):
         self.merge_count += 1
-        self.time_periods += [(other_topic.start_datetime, other_topic.stop_datetime)]
-        relevant_words = self.relevant_words + other_topic.relevant_words
         relevant_words_dict = {}
-        for word_tuple in relevant_words:
+        topic_words_number = self.relevant_words.__len__()
+
+        for word_tuple in self.relevant_words:
+            relevant_words_dict[word_tuple[0]] = word_tuple[1]
+
+        for word_tuple in other_topic.relevant_words:
             if word_tuple[0] in relevant_words_dict:
                 relevant_words_dict[word_tuple[0]] = (relevant_words_dict[word_tuple[0]] *
                                                       self.merge_count + word_tuple[1]) / (self.merge_count + 1)
             else:
                 relevant_words_dict[word_tuple[0]] = word_tuple[1]
-        self.relevant_words = sorted(relevant_words_dict.items(), key=lambda x: x[1], reverse=True)[0:5]
+
+        self.relevant_words = sorted(relevant_words_dict.items(), key=lambda x: x[1], reverse=True)[0:topic_words_number]
         relevant_tweets_map = {}
         for tweet_tuple in self.relevant_tweets + other_topic.relevant_tweets:
             if tweet_tuple[1] not in relevant_tweets_map:

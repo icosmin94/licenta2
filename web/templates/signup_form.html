@@ -1,0 +1,39 @@
+<div class="container">
+        <form class="signup_form" onsubmit="event.preventDefault(); signup();" method ="POST">
+            <table>
+                <tr>
+                    <td id="signup_txt">Sign Up </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" id="signup_email" name="signup_email" placeholder="Email">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" id="signup_username" name="signup_username" placeholder="Username ">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="password" id="password" name="signup_password" placeholder="Password">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" id="signup_button" value="Sign Up">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="error_message">{{ message }}</div>
+                    </td>
+                </tr>
+                </table>
+        </form>
+    </div>
