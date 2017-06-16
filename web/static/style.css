@@ -22,7 +22,7 @@ body {
     text-align:center;
     font-family: 'Merriweather', serif;
     color: black;
-    font-size:35px;
+    font-size:25px;
     padding:5px;
 }
 
@@ -53,6 +53,9 @@ body {
 .menu > ul > li {
     display:inline-block;
     cursor: pointer;
+}
+#config {
+    margin-left: 15%;
 }
 #login{
     float:right;

@@ -1,5 +1,6 @@
 import configparser
-
+import os
+from shutil import copyfile, copy
 from flask import Flask, redirect, url_for, request, render_template, make_response, session
 import json
 
@@ -70,6 +71,10 @@ def check_credentials():
         if result is None:
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
             session['user_name'] = signup_username
+            if not os.path.exists("./users/" + signup_username):
+                os.makedirs("./users/" + signup_username)
+                os.chmod(os.path.abspath("./users/" + signup_username+"/"), 0o777)
+                copy('../config/config.ini', os.path.abspath("./users/" + signup_username+"/"))
             return render_template('response.html', message="ok")
         else:
             return render_template('response.html', message="error")
