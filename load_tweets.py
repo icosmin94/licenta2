@@ -44,10 +44,10 @@ def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer
 
 def load_tweets():
 
-    config = configparser.ConfigParser()
-    config.read('./config/config.ini')
+    with open('./config/config.json') as data_file:
+        config = json.load(data_file)
 
-    tweetsFile = config['default']['tweets_file']
+    tweetsFile = config['general']['tweets_file']
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
@@ -57,7 +57,7 @@ def load_tweets():
     tweets_collection.create_index([("date_time", pymongo.ASCENDING)])
 
     batch_size = int(config['tweets']['batch_size'])
-    concurrent_tasks = int(config['default']['concurrent_tasks'])
+    concurrent_tasks = int(config['general']['concurrent_tasks'])
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
     word_net_lemmatizer = WordNetLemmatizer()
     word_net_lemmatizer.lemmatize("dogs")

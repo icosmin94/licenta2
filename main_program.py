@@ -1,4 +1,5 @@
 import configparser
+import json
 import operator
 
 import time
@@ -12,8 +13,9 @@ from topics import Topic
 from tweet import Tweet
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('./config/config.ini')
+
+    with open('./config/config.json') as data_file:
+        config = json.load(data_file)
 
     if config['tweets']['load_tweets'].lower() == "true":
         load_tweets()

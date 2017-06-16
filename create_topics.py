@@ -1,4 +1,5 @@
 import configparser
+import json
 from concurrent.futures import ProcessPoolExecutor
 import re
 import numpy as np
@@ -99,13 +100,13 @@ def compute_nmf(config, start_datetime, stop_datetime):
 
 def create_and_store_topics():
 
-    config = configparser.ConfigParser()
-    config.read('./config/config.ini')
+    with open('./config/config.json') as data_file:
+        config = json.load(data_file)
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
-    concurrent_tasks = int(config['default']['concurrent_tasks'])
+    concurrent_tasks = int(config['general']['concurrent_tasks'])
     topic_collection = db[config['topics']['topic_collection_name']]
     topic_collection.drop()
     # add index on date-time

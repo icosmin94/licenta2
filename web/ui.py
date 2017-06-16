@@ -2,7 +2,9 @@ import configparser
 import os
 from shutil import copyfile, copy
 from flask import Flask, redirect, url_for, request, render_template, make_response, session
+
 import json
+from pprint import pprint
 
 from pymongo import MongoClient
 
@@ -74,7 +76,7 @@ def check_credentials():
             if not os.path.exists("./users/" + signup_username):
                 os.makedirs("./users/" + signup_username)
                 os.chmod(os.path.abspath("./users/" + signup_username+"/"), 0o777)
-                copy('../config/config.ini', os.path.abspath("./users/" + signup_username+"/"))
+                copy('../config/config.json', os.path.abspath("./users/" + signup_username+"/"))
             return render_template('response.html', message="ok")
         else:
             return render_template('response.html', message="error")
@@ -83,11 +85,16 @@ def check_credentials():
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
-    config.read('../config/config.ini')
+    config.read('../config/config.json')
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     users = db['users']
     users.drop()
+
+    with open('../config/config.json') as data_file:
+        config = json.load(data_file)
+
+    pprint(config)
 
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
                      "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
