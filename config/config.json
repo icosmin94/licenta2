@@ -9,13 +9,13 @@
     "db": "licenta"
   },
   "tweets": {
-    "load_tweets": "True",
+    "load_tweets": "False",
     "collection_name": "tweets",
     "batch_size": "312500",
     "date_hour_collection_name": "date_hour"
   },
   "topics": {
-    "create_topics": "True",
+    "create_topics": "False",
     "nr_topics": "10",
     "topic_collection_name": "topics",
     "topic_words_nr": "8",

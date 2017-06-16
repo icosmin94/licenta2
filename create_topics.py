@@ -88,7 +88,8 @@ def compute_nmf(config, start_datetime, stop_datetime):
         tweet_topic_pairs = sorted(tweet_topic_pairs,  key=lambda x: x[0], reverse=True)
         for j in range(0, 4):
             if tweet_topic_pairs[j][0] > 0.1:
-                topics_list[tweet_topic_pairs[j][1]].relevant_tweets.append((tweet_topic_pairs[j][0], tweets[index]._id))
+                topics_list[tweet_topic_pairs[j][1]].relevant_tweets.append(
+                    (tweet_topic_pairs[j][0], tweets[index]._id))
 
         index += 1
     topics_list = [topic.__dict__ for topic in topics_list]

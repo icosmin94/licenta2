@@ -1,7 +1,7 @@
 import configparser
 import os
 from shutil import copyfile, copy
-from flask import Flask, redirect, url_for, request, render_template, make_response, session
+from flask import Flask, redirect, url_for, request, render_template, make_response, session, jsonify
 
 import json
 from pprint import pprint
@@ -35,6 +35,15 @@ def index():
 @app.route('/board', methods=['POST', 'GET'])
 def board():
     return render_template('board.html', user=session['user_name'])
+
+
+@app.route('/config', methods=['POST', 'GET'])
+def config():
+    with open('./users/'+session.get('user_name')+'/config.json') as config_file:
+        config = json.load(config_file)
+
+    config['user'] = session.get('user_name')
+    return jsonify(config)
 
 
 @app.route('/check_credentials', methods=['POST'])
@@ -84,17 +93,12 @@ def check_credentials():
     return render_template('response.html', message="error")
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('../config/config.json')
-    client = MongoClient(config['database']['host'], int(config['database']['port']))
-    db = client[config['database']['db']]
-    users = db['users']
-    users.drop()
-
     with open('../config/config.json') as data_file:
         config = json.load(data_file)
 
-    pprint(config)
+    client = MongoClient(config['database']['host'], int(config['database']['port']))
+    db = client[config['database']['db']]
+    users = db['users']
 
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
                      "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
