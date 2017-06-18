@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+    <title>
+        Licenta Iacob Cosmin-George
+    </title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename = 'javascript.js') }}"></script>
+</head>
+<body>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<div id="beginning">
+    <img src="{{ url_for('static', filename = 'logo_cs_1.png') }}" class="cs_image">
+    <p id="title"> Dectectia evenimentelor si anomaliilor</p>
+</div>
+
+<div class="menu">
+    <ul>
+        <li id="home"><i class="fa fa-home"></i></li>
+        <li id="config">Config</li>
+        <li id="board">Board</li>
+        <li id="logout">Log Out</li>
+        <li id="username">User: {{user}}</li>
+    </ul>
+</div>
+
+<div class="main">
+    <div class="config">
+        <form class="config_form" onsubmit="event.preventDefault();" method="POST">
+            <p class="config_element" id="config_title">Config</p>
+            <table class="config_component">
+                <tr>
+                    <td colspan="2">
+                        <p class="config_element config_sub_title">General Proprieties</p>
+                    </td>
+                </tr>
+                  <tr>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                </tr>
+                <!--
+                <tr>
+                    <td>
+                        <div class="config_element">
+                            <label for="upload" id="upload_label">
+                                <span class="file-button">Choose tweet file</span>
+                            </label>
+                            <input name="upload" type="file" id="upload" onchange='uploadFile(this)'>
+                        </div>
+                    </td>
+                    <td> <span  class="config_element" id="file"></span></td>
+                </tr>-->
+                <tr>
+                    <td><p class="config_element config_sub_sub_title">Threads</p></td>
+                    <td>
+                        <span>Value:</span>
+                        <div class="special_element" id = "slider-threads"></div>
+                    </td>
+                </tr>
+                 <tr>
+                    <td> <p class="config_element config_sub_sub_title">Batch Size</p></td>
+                    <td>   <span>Value:</span>
+                        <div class="special_element" id = "slider-batch"></div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                </tr>
+            </table>
+
+            <table class="config_component" >
+                <tr>
+                     <td colspan="2">
+                        <p class="config_element config_sub_title">Database Proprieties</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td> <p class="config_element config_sub_sub_title">Host</p></td>
+                    <td> <input type="text" class="config_element" id="host" name="host" placeholder="host"></td>
+                </tr>
+                <tr>
+                   <td> <p class="config_element config_sub_sub_title">Port</p></td>
+                      <td> <input type="text" class="config_element" id="port" name="port" placeholder="port"></td>
+                </tr>
+                 <tr>
+                   <td> <p class="config_element config_sub_sub_title">Database</p></td>
+                    <td> <input type="text" class="config_element" id="db" name="db" placeholder="database"></td>
+                </tr>
+                <tr>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                </tr>
+            </table>
+
+            <table class="config_component" >
+                <tr>
+                     <td colspan="2">
+                        <p class="config_element config_sub_title">Topic Proprieties</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td> <p class="config_element config_sub_sub_title">Topics per Interval</p></td>
+                    <td>
+                        <span>Value:</span>
+                        <div class="special_element" id = "slider-topics"></div>
+                    </td>
+                </tr>
+                <tr>
+                   <td> <p class="config_element config_sub_sub_title">Topic words number</p></td>
+                     <td>
+                         <span>Value:</span>
+                        <div class="special_element" id = "slider-words"></div>
+                    </td>
+                </tr>
+                 <tr>
+                   <td> <p class="config_element config_sub_sub_title">Merge Threshold</p></td>
+                    <td>
+                         <span>Value:</span>
+                        <div class="special_element" id = "slider-threshold"></div>
+                    </td>
+                </tr>
+                 <tr>
+                   <td> <p class="config_element config_sub_sub_title">Granularity</p></td>
+                     <td>
+                         <span>Value:</span>
+                        <div class="special_element" id = "slider-granularity"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                    <td><p class="config_element no_show">Nothing</p></td>
+                </tr>
+            </table>
+            </br>
+            <input type="submit" id="config_button" class="config_element" value="Save Config">
+
+        </form>
+    </div>
+</div>
+
+
+</body>
+</html>

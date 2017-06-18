@@ -37,13 +37,25 @@ def board():
     return render_template('board.html', user=session['user_name'])
 
 
+@app.route('/get_config', methods=['POST'])
+def get_config():
+    with open('./users/' + session.get('user_name') + '/config.json') as config_file:
+        config = json.load(config_file)
+    return jsonify(config)
+
+
+@app.route('/set_config', methods=['POST'])
+def set_config():
+    data = json.loads(request.form['jsonData'])
+    with open('./users/' + session.get('user_name') + '/config.json', 'w') as outfile:
+        json.dump(data, outfile)
+    return render_template('response.html', message="ok")
+
+
 @app.route('/config', methods=['POST', 'GET'])
 def config():
-    with open('./users/'+session.get('user_name')+'/config.json') as config_file:
-        config = json.load(config_file)
-
     config['user'] = session.get('user_name')
-    return jsonify(config)
+    return render_template('config.html', user=session['user_name'])
 
 
 @app.route('/check_credentials', methods=['POST'])

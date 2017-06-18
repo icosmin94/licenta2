@@ -56,7 +56,7 @@ def load_tweets():
     # create index on date
     tweets_collection.create_index([("date_time", pymongo.ASCENDING)])
 
-    batch_size = int(config['tweets']['batch_size'])
+    batch_size = int(config['general']['batch_size'])
     concurrent_tasks = int(config['general']['concurrent_tasks'])
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
     word_net_lemmatizer = WordNetLemmatizer()

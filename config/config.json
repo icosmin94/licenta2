@@ -1,7 +1,8 @@
 {
   "general": {
     "tweets_file": "C:/Users/cosiacob/Desktop/tweets/TwitterDB2500K.csv",
-    "concurrent_tasks": "8"
+    "concurrent_tasks": "8",
+    "batch_size": "300000"
   },
   "database": {
     "host": "localhost",
@@ -11,7 +12,6 @@
   "tweets": {
     "load_tweets": "False",
     "collection_name": "tweets",
-    "batch_size": "312500",
     "date_hour_collection_name": "date_hour"
   },
   "topics": {

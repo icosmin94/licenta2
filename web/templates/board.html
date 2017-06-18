@@ -11,6 +11,10 @@
 <body>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+     rel = "stylesheet">
+    <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 
     <div id="beginning">
         <img src="{{ url_for('static', filename = 'logo_cs_1.png') }}" class="cs_image">
@@ -21,6 +25,7 @@
          <ul>
              <li id="home"><i class="fa fa-home"></i></li>
              <li id="config">Config</li>
+             <li id="board">Board</li>
              <li id="logout">Log Out</li>
              <li id="username">User: {{user}}</li>
          </ul>
