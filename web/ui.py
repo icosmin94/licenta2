@@ -8,6 +8,8 @@ from pprint import pprint
 
 from pymongo import MongoClient
 
+from load_tweets import load_tweets
+
 app = Flask(__name__)
 
 
@@ -32,6 +34,12 @@ def index():
             return render_template('index.html')
 
 
+@app.route('/load_tweets', methods=['POST'])
+def load_tweets_call():
+    # load_tweets(session['user_name'])
+    return render_template('board.html', user=session['user_name'])
+
+
 @app.route('/board', methods=['POST', 'GET'])
 def board():
     return render_template('board.html', user=session['user_name'])
@@ -39,7 +47,7 @@ def board():
 
 @app.route('/get_config', methods=['POST'])
 def get_config():
-    with open('./users/' + session.get('user_name') + '/config.json') as config_file:
+    with open('../users/' + session.get('user_name') + '/config.json') as config_file:
         config = json.load(config_file)
     return jsonify(config)
 
@@ -47,7 +55,7 @@ def get_config():
 @app.route('/set_config', methods=['POST'])
 def set_config():
     data = json.loads(request.form['jsonData'])
-    with open('./users/' + session.get('user_name') + '/config.json', 'w') as outfile:
+    with open('../users/' + session.get('user_name') + '/config.json', 'w') as outfile:
         json.dump(data, outfile)
     return render_template('response.html', message="ok")
 
@@ -94,10 +102,13 @@ def check_credentials():
         if result is None:
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
             session['user_name'] = signup_username
-            if not os.path.exists("./users/" + signup_username):
-                os.makedirs("./users/" + signup_username)
-                os.chmod(os.path.abspath("./users/" + signup_username+"/"), 0o777)
-                copy('../config/config.json', os.path.abspath("./users/" + signup_username+"/"))
+            if not os.path.exists("../users/" + signup_username):
+                os.makedirs("../users/" + signup_username)
+                os.chmod(os.path.abspath("../users/" + signup_username+"/"), 0o777)
+                copy('../config/config.json', os.path.abspath("../users/" + signup_username+"/"))
+            if not os.path.exists("../users/" + signup_username + "/files"):
+                os.makedirs("../users/" + signup_username + "/files")
+                os.chmod("../users/" + signup_username + "/files/", 0o777)
             return render_template('response.html', message="ok")
         else:
             return render_template('response.html', message="error")

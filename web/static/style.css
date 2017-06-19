@@ -79,19 +79,6 @@ body {
     background: -moz-linear-gradient(#0033cc, #000066); /* For Firefox 3.6 to 15 */
     background: linear-gradient(#0033cc, #000066); /* Standard syntax */
 }
-.graphs {
-     margin:0 auto;
-     padding:15px;
-     width:60%;
-     min-width: 550px;
-     max-width: 1050px;
-     background-color:#fcfcfc;
-     border: 1px solid #ccc ;
-     border-radius: 10px;
-     min-height:200px;
-     margin-top:30px;
-     display: none;
-}
 .login_form > table, .login_form  td >  input {
     text-align: center;
     margin: 0 auto;
@@ -297,6 +284,43 @@ body {
 #upload_label {
     cursor: pointer;
 }
+.ui-slider-horizontal {
+    height: 8px;
+    width: 150px;
+}
+.ui-slider .ui-slider-handle {
+    height: 15px;
+    background: blue;
+}
+.command_panel {
+    margin-top:50px;
+}
+.board {
+    padding:0;
+    margin:0 auto;
+    margin-top:50px;
+    width:90%;
+    padding-top:20px;
+    padding-bottom:20px;
+    max-width:1500px;
+    min-width:900px;
+    overflow: auto;
+}
+.graphs {
+    padding:0;
+    margin-left:5%;
+    margin-right:5%;
+    width:90%;
+    padding-top:10px;
+    padding-bottom:20px;
+    background-color:#fcfcfc;
+    border: 1px solid #ccc ;
+    border-radius: 10px;
+    max-width:1200px;
+    min-width:700px;
+    overflow: auto;
+}
+
 .file-button {
     background-color: #0033cc;
     background: #0033cc; /* For browsers that do not support gradients */
@@ -309,12 +333,33 @@ body {
     padding: 4px;
     margin: 5px;
     font-size:15px;
+    width:100px;
+    cursor:pointer;
+    text-align: center;
 }
-.ui-slider-horizontal {
-    height: 8px;
-    width: 150px;
+.control_panel {
+    margin-left:10px;
+    margin-top:10px;
+    padding-left:5px;
+    margin-bottom:15px;
+
 }
-.ui-slider .ui-slider-handle {
-    height: 15px;
-    background: blue;
+.control_panel td {
+    width:50px;
+    border: 1px solid black;
+}
+.control_panel_element {
+    width: 70%;
+    margin-left:15%;
+    margin-right:15%
+    font-size:12px;
+    margin-top: 2px;
+    margin-bottom:2px;
+    padding-bottom: 6px;
+    padding-top: 6px;
+    border-radius: 4px;
+    text-align: center;
+}
+.board_column {
+    max-width:50px;
 }

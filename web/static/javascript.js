@@ -30,10 +30,7 @@ $(document).ready(function () {
        }
        request.send("jsonData="+params);
     };
-    $(document).on("click", "#config_button", function(){
-        config = send_config_update(config);
-        window.location.href = "/board";
-    });
+
 
 });
 
