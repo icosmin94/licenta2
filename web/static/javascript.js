@@ -30,9 +30,29 @@ $(document).ready(function () {
        }
        request.send("jsonData="+params);
     };
-
+     $(document).on("click", "#load_tweets", function(){
+        load_tweets();
+    });
 
 });
+
+function load_tweets() {
+   var form_data = new FormData($('#board_form')[0]);
+    $.ajax({
+        type: 'POST',
+        url: '/load_tweets',
+        data: form_data,
+        contentType: false,
+        cache: false,
+        processData: false,
+        async: false,
+        success: function(data) {
+            console.log('Success!');
+            $("#load_tweets_icon").text("Incarc");
+        },
+    });
+
+}
 
 function send_config_update(config) {
     config['topics']['granularity'] = $( "#slider-granularity" ).slider( "value");
