@@ -1,6 +1,8 @@
 import configparser
 import os
 from shutil import copyfile, copy
+
+import time
 from flask import Flask, redirect, url_for, request, render_template, make_response, session, jsonify
 
 import json
@@ -8,6 +10,8 @@ from pprint import pprint
 
 from pymongo import MongoClient
 
+from create_topics import create_and_store_topics
+from events import show_events
 from load_tweets import load_tweets
 
 app = Flask(__name__)
@@ -34,10 +38,27 @@ def index():
             return render_template('index.html')
 
 
+@app.route('/show_events', methods=['POST'])
+def show_events_call():
+    show_events(session.get('user_name'))
+    return render_template('response.html', message="ok")
+
+
+@app.route('/create_topics', methods=['POST'])
+def create_topics_call():
+    create_and_store_topics(session.get('user_name'))
+    return render_template('response.html', message="ok")
+
+
 @app.route('/load_tweets', methods=['POST'])
 def load_tweets_call():
-    # load_tweets(session['user_name'])
-    return render_template('board.html', user=session['user_name'])
+    if request.files['upload'].filename == '':
+        return render_template('response.html', message="notok")
+    f = request.files['upload']
+    filename = "../users/" + session.get('user_name') + "/files/"+f.filename
+    f.save(filename)
+    load_tweets(session.get('user_name'), filename)
+    return render_template('response.html', message="ok")
 
 
 @app.route('/board', methods=['POST', 'GET'])
@@ -125,4 +146,4 @@ if __name__ == '__main__':
 
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
                      "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8000, threaded=True)

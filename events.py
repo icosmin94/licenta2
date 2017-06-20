@@ -11,9 +11,9 @@ from load_tweets import load_tweets
 from topics import Topic
 from tweet import Tweet
 
-if __name__ == '__main__':
 
-    with open('./config/config.json') as data_file:
+def show_events(username):
+    with open('../config/config.json') as data_file:
         config = json.load(data_file)
 
     if config['tweets']['load_tweets'].lower() == "true":
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     granularity = float(config['topics']['granularity'])
 
     start = time.time()
-    topics_cursor = topic_collection.find()
+    topics_cursor = topic_collection.find({'username': username})
     topics = []
     for topic in topics_cursor:
         topics += [Topic.create_topic(topic)]
@@ -92,4 +92,3 @@ if __name__ == '__main__':
     plt.show()
     end = time.time()
     print("Merging topics took: ", end - start)
-

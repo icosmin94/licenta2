@@ -16,7 +16,7 @@ from tweet import Tweet
 from sklearn.decomposition import NMF
 
 
-def compute_nmf(config, start_datetime, stop_datetime):
+def compute_nmf(config, start_datetime, stop_datetime, username):
     idf = {}
     tweets = []
     nr_topics = int(config['topics']['nr_topics'])
@@ -29,7 +29,8 @@ def compute_nmf(config, start_datetime, stop_datetime):
     tweets_collection = db[config['tweets']['collection_name']]
     topic_collection = db[config['topics']['topic_collection_name']]
 
-    result = tweets_collection.find({'date_time':  {'$gte':  start_datetime, '$lt': stop_datetime}})
+    result = tweets_collection.find(
+        {"$and": [{'date_time': {'$gte': start_datetime, '$lt': stop_datetime}}, {'username': username}]})
     for tweet in result:
         tweets += [Tweet.create_tweet(tweet)]
 
@@ -70,7 +71,7 @@ def compute_nmf(config, start_datetime, stop_datetime):
 
     # extract topics and relevant tweets
     for topic in topics:
-        topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime)
+        topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime, username=username)
         values = topic.tolist()
         relevant_words = {}
         for i in range(0, values.__len__()):
@@ -99,9 +100,9 @@ def compute_nmf(config, start_datetime, stop_datetime):
           "tweets")
 
 
-def create_and_store_topics():
+def create_and_store_topics(username):
 
-    with open('./config/config.json') as data_file:
+    with open('../users/' + username+'/config.json') as data_file:
         config = json.load(data_file)
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
@@ -109,9 +110,9 @@ def create_and_store_topics():
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
     concurrent_tasks = int(config['general']['concurrent_tasks'])
     topic_collection = db[config['topics']['topic_collection_name']]
-    topic_collection.drop()
-    # add index on date-time
-    topic_collection.create_index([("start_datetime", pymongo.ASCENDING)])
+    # add index on date-time and user_name
+    topic_collection.create_index([("start_datetime", pymongo.ASCENDING), ("username", pymongo.ASCENDING)])
+    topic_collection.remove({"username": username})
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
 
     date_hour_list = date_hour_collection.find_one()['dates']
@@ -126,7 +127,7 @@ def create_and_store_topics():
     # start tf-idf and nmf
     start = time.time()
     while start_datetime <= limit_datetime:
-        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime)]
+        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username)]
 
         start_datetime += datetime.timedelta(minutes=10)
         stop_datetime += datetime.timedelta(minutes=10)

@@ -322,17 +322,16 @@ body {
 }
 
 .file-button {
-    background-color: #0033cc;
-    background: #0033cc; /* For browsers that do not support gradients */
-    background: -webkit-linear-gradient(#0033cc, #000066); /* For Safari 5.1 to 6.0 */
-    background: -o-linear-gradient(#0033cc, #000066); /* For Opera 11.1 to 12.0 */
-    background: -moz-linear-gradient(#0033cc, #000066); /* For Firefox 3.6 to 15 */
-    background: linear-gradient(#0033cc, #000066); /* Standard syntax */
+    background: #668cff; /* For browsers that do not support gradients */
+     background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
+     background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
+     background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
+     background: linear-gradient(#668cff, #000066); /* Standard syntax */
     color: white;
     border-radius: 4px;
     padding: 4px;
     margin: 5px;
-    font-size:15px;
+    font-size:13px;
     width:100px;
     cursor:pointer;
     text-align: center;
@@ -362,4 +361,36 @@ body {
 }
 .board_column {
     max-width:50px;
+}
+#load_tweets_icon {
+    border: 2px solid white; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 0.5s linear infinite;
+    visibility: hidden;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+#create_topics_icon {
+    border: 2px solid white; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 0.5s linear infinite;
+    visibility: hidden;
+}
+#events_icon {
+    border: 2px solid white; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 0.5s linear infinite;
+    visibility: hidden;
 }

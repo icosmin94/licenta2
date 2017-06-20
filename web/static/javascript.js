@@ -30,28 +30,80 @@ $(document).ready(function () {
        }
        request.send("jsonData="+params);
     };
-     $(document).on("click", "#load_tweets", function(){
-        load_tweets();
+    $(document).on("click", "#config_button", function(){
+        config = send_config_update(config);
+        window.location.href = "/board";
     });
+
+     var state = {'clicked': false};
+     $(document).on("click", "#load_tweets", function(){
+        load_tweets(state);
+    });
+    $(document).on("click", "#create_topics", function(){
+        create_topics(state);
+    });
+    $(document).on("click", "#show_events", function(){
+        show_events(state);
+    });
+
 
 });
-
-function load_tweets() {
-   var form_data = new FormData($('#board_form')[0]);
-    $.ajax({
-        type: 'POST',
-        url: '/load_tweets',
-        data: form_data,
-        contentType: false,
-        cache: false,
-        processData: false,
-        async: false,
-        success: function(data) {
-            console.log('Success!');
-            $("#load_tweets_icon").text("Incarc");
-        },
-    });
-
+function show_events(state) {
+   if (state['clicked'] == false) {
+        var request = new XMLHttpRequest();
+        request.open("POST", "/show_events", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action' : 'show_events'});
+        $("#events_icon").css("visibility", "visible");
+        state['clicked'] = true;
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                console.log(request.responseText)
+                state['clicked'] = false;
+                $("#events_icon").css("visibility", "hidden");
+            }
+       }
+       request.send("jsonData="+params);
+   }
+}
+function create_topics(state) {
+   if (state['clicked'] == false) {
+        var request = new XMLHttpRequest();
+        request.open("POST", "/create_topics", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action' : 'create_topics'});
+        $("#create_topics_icon").css("visibility", "visible");
+        state['clicked'] = true;
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                console.log(request.responseText)
+                state['clicked'] = false;
+                $("#create_topics_icon").css("visibility", "hidden");
+            }
+       }
+       request.send("jsonData="+params);
+   }
+}
+function load_tweets(state) {
+   if (state['clicked'] == false) {
+       var form_data = new FormData($('#board_form')[0]);
+       state['clicked'] = true;
+       $("#load_tweets_icon").css("visibility", "visible");
+        $.ajax({
+            type: 'POST',
+            url: '/load_tweets',
+            data: form_data,
+            contentType: false,
+            cache: false,
+            processData: false,
+            async: true,
+            success: function(data) {
+                console.log(data);
+                state['clicked'] = false;
+                $("#load_tweets_icon").css("visibility", "hidden");
+            },
+        });
+   }
 }
 
 function send_config_update(config) {

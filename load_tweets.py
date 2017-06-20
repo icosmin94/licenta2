@@ -16,9 +16,10 @@ def merge_date_hour_dict(dict1, dict2):
             dict1[date] = dict2[date]
 
 
-def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config, task_number):
+def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config, task_number, username):
     print("Started task", task_number, ": processing:", lines.__len__(), "tweets")
-    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer).__dict__ for tweet_line in lines]
+    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer, username).__dict__ for tweet_line
+              in lines]
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
@@ -42,19 +43,18 @@ def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer
     return date_hour_dict
 
 
-def load_tweets():
+def load_tweets(username, filename):
 
-    with open('./config/config.json') as data_file:
+    with open('../users/' + username+'/config.json') as data_file:
         config = json.load(data_file)
 
-    tweetsFile = config['general']['tweets_file']
+    tweetsFile = filename
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     tweets_collection = db[config['tweets']['collection_name']]
-    tweets_collection.drop()
-    # create index on date
-    tweets_collection.create_index([("date_time", pymongo.ASCENDING)])
+    # create index on date and user_name
+    tweets_collection.create_index([("date_time", pymongo.ASCENDING), ("username", pymongo.ASCENDING)])
 
     batch_size = int(config['general']['batch_size'])
     concurrent_tasks = int(config['general']['concurrent_tasks'])
@@ -64,12 +64,12 @@ def load_tweets():
 
     # read stop words
     stop_words = []
-    with open('./words/stop_words.txt') as sp:
+    with open('../words/stop_words.txt') as sp:
         for line in sp:
             stop_words.extend([line.strip(" \n")])
 
     # read contractions file
-    with open('./words/contractions.json') as contractions_file:
+    with open('../words/contractions.json') as contractions_file:
         contractions = json.load(contractions_file)
 
     line_number = 0
@@ -89,7 +89,7 @@ def load_tweets():
                     submitted_lines = lines[:]
 
                     futures += [executor.submit(create_and_store_tweets, submitted_lines, contractions, stop_words,
-                                                word_net_lemmatizer, config, task_number)]
+                                                word_net_lemmatizer, config, task_number, username)]
                     tweets_in_batch = 0
                     lines = []
                     task_number += 1
@@ -101,7 +101,7 @@ def load_tweets():
     if lines.__len__() > 0:
         submitted_lines = lines[:]
         futures += [executor.submit(create_and_store_tweets, submitted_lines, contractions, stop_words,
-                                    word_net_lemmatizer, config, task_number)]
+                                    word_net_lemmatizer, config, task_number, username)]
 
     for future in futures:
         merge_date_hour_dict(date_hour_dict, future.result())
@@ -116,8 +116,12 @@ def load_tweets():
 
     end = time.time()
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
-    date_hour_collection.drop()
-    date_hour_collection.insert({"dates": date_hour_list})
+    previous_date_hour = date_hour_collection.find_one({'username': username})
+
+    if previous_date_hour is not None:
+        date_hour_list = list(set(previous_date_hour['dates'] + date_hour_list))
+        date_hour_collection.drop()
+    date_hour_collection.insert({"dates": date_hour_list, 'username': username})
 
     print("Processing tweets took: ", end - start)
 
