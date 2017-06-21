@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script type="text/javascript"
             src="{{ url_for('static', filename = 'javascript.js') }}"></script>
 </head>
@@ -38,9 +39,11 @@
 
                          <input name="upload" type="file" id="upload" onchange='uploadFile(this)'>
                     </td>
-                    <td colspan="4" >
+                    <td colspan="6" >
                         <p  class="control_panel_element" id="file"> </p>
                     </td>
+                </tr>
+                <tr>
                      <td colspan="4">
                          <div class="file-button control_panel_element" id="load_tweets">Load Tweets</div>
                      </td>
@@ -60,7 +63,7 @@
         </form>
 
         <div class="graphs">
-            <p class="file-button">fhgdppom</p>
+            <div id="graph"  style="width: 480px; height: 400px;"></div>
 
         </div>
     </div>

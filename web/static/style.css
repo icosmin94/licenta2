@@ -9,7 +9,7 @@
     padding-bottom:5px;
 }
 body {
-    background-color: #f2f2f2;
+    background-color: #F8F8F8;
 }
 .cs_image {
     height: 80px;
@@ -247,11 +247,11 @@ body {
 }
 #config_button {
      cursor: pointer;
-     background: #668cff; /* For browsers that do not support gradients */
-     background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
-     background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
-     background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
-     background: linear-gradient(#668cff, #000066); /* Standard syntax */
+    background: #0e7df4; /* For browsers that do not support gradients */
+     background: -webkit-linear-gradient(#0e7df4, #1c2a87); /* For Safari 5.1 to 6.0 */
+     background: -o-linear-gradient(#0e7df4, #1c2a87); /* For Opera 11.1 to 12.0 */
+     background: -moz-linear-gradient(#0e7df4, #1c2a87); /* For Firefox 3.6 to 15 */
+     background: linear-gradient(#0e7df4, #1c2a87); /* Standard syntax */
      color: white;
      border: none;
      width: 30%;
@@ -298,9 +298,9 @@ body {
 .board {
     padding:0;
     margin:0 auto;
-    margin-top:50px;
+    margin-top:0px;
     width:90%;
-    padding-top:20px;
+    padding-top:30px;
     padding-bottom:20px;
     max-width:1500px;
     min-width:900px;
@@ -322,11 +322,11 @@ body {
 }
 
 .file-button {
-    background: #668cff; /* For browsers that do not support gradients */
-     background: -webkit-linear-gradient(#668cff, #000066); /* For Safari 5.1 to 6.0 */
-     background: -o-linear-gradient(#668cff, #000066); /* For Opera 11.1 to 12.0 */
-     background: -moz-linear-gradient(#668cff, #000066); /* For Firefox 3.6 to 15 */
-     background: linear-gradient(#668cff, #000066); /* Standard syntax */
+    background: #0e7df4; /* For browsers that do not support gradients */
+     background: -webkit-linear-gradient(#0e7df4, #1c2a87); /* For Safari 5.1 to 6.0 */
+     background: -o-linear-gradient(#0e7df4, #1c2a87); /* For Opera 11.1 to 12.0 */
+     background: -moz-linear-gradient(#0e7df4, #1c2a87); /* For Firefox 3.6 to 15 */
+     background: linear-gradient(#0e7df4, #1c2a87); /* Standard syntax */
     color: white;
     border-radius: 4px;
     padding: 4px;

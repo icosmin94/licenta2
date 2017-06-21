@@ -45,7 +45,11 @@ $(document).ready(function () {
     $(document).on("click", "#show_events", function(){
         show_events(state);
     });
-
+    TESTER = document.getElementById('graph');
+	Plotly.plot( TESTER, [{
+	x: [1, 2, 3, 4, 5],
+	y: [1, 2, 4, 8, 16] }], {
+	margin: { t: 0 } } );
 
 });
 function show_events(state) {
