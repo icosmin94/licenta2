@@ -23,7 +23,7 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
     topic_words_nr = int(config['topics']['topic_words_nr'])
     topics_list = []
     tweet_per_topic_number = int(config['topics']['tweet_per_topic'])
-    tweet_threshold = int(config['topics']['tweet_threshold'])
+    tweet_threshold = float(config['topics']['tweet_threshold'])
 
     # get tweets from db
     client = MongoClient(config['database']['host'], int(config['database']['port']))

@@ -424,7 +424,7 @@ function setSliders(config) {
                 "Value: " + $( "#slider-tweet_topic" ).slider( "value");
 
      $("#slider-tweet_threshold").slider({
-          min: 0.06,
+          min: 0.001,
           max: 0.1,
           value: config['topics']['tweet_threshold'],
           step: 0.001,
