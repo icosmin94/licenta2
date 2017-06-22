@@ -5,24 +5,15 @@ import time
 
 import datetime
 from pymongo import MongoClient
-import matplotlib.pyplot as plt
-from create_topics import create_and_store_topics
-from load_tweets import load_tweets
 from topics import Topic
 from tweet import Tweet
 
 
-def show_events(username):
-    with open('../config/config.json') as data_file:
+def process_events(username):
+    with open('../users/' + username + '/config.json') as data_file:
         config = json.load(data_file)
 
-    if config['tweets']['load_tweets'].lower() == "true":
-        load_tweets()
-
-    if config['topics']['create_topics'].lower() == "true":
-        create_and_store_topics()
-
-    merge_threshold = float(config['topics']['merge_threshold'])
+    merge_threshold = float(config['events']['merge_threshold'])
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
@@ -31,7 +22,7 @@ def show_events(username):
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
     date_hour_list = date_hour_collection.find_one()['dates']
     date_hour_list.sort()
-    granularity = float(config['topics']['granularity'])
+    granularity = float(config['events']['granularity'])
 
     start = time.time()
     topics_cursor = topic_collection.find({'username': username})
@@ -40,6 +31,7 @@ def show_events(username):
         topics += [Topic.create_topic(topic)]
 
     topic_clusters = []
+    print("Finished reading topics")
 
     for topic in topics:
         result = 0
@@ -53,9 +45,11 @@ def show_events(username):
             topic_clusters += [topic]
         else:
             assign_cluster.merge_with(topic)
-    plot_index = 1
-    for try_topic in topic_clusters:
-        topic_tweet_ids = [tweet_tuple[1] for tweet_tuple in try_topic.relevant_tweets]
+    print("Finished assigning topics to clusters")
+    result = {}
+    index = 0
+    for cluster in topic_clusters:
+        topic_tweet_ids = [tweet_tuple[1] for tweet_tuple in cluster.relevant_tweets]
         tweets_cursor = tweets_collection.find({"_id": {"$in": topic_tweet_ids}})
 
         tweets = []
@@ -81,14 +75,30 @@ def show_events(username):
             if float(value) > max_value/10:
                 occurrences += 1
         if occurrences/values.__len__() < granularity:
-            plt.figure(plot_index, figsize=(12, 7))
-            plt.plot([x for x in date_hour_list], values, marker='o', linestyle='--')
-            plt.title([word_tuple[0] for word_tuple in try_topic.relevant_words].__str__(), fontsize=10)
-            plt.xticks(fontsize=8)
-            plt.xlabel('time', fontsize=10)
-            plt.ylabel('tweets')
-            plot_index += 1
+            result[str(index)] = {}
+            result[str(index)]['x'] = [date_hour.isoformat() for date_hour in date_hour_list]
+            result[str(index)]['y'] = values
+            result[str(index)]['title'] = ', '.join([word_tuple[0] for word_tuple in cluster.relevant_words])
+            index += 1
 
-    plt.show()
     end = time.time()
+    result['username'] = username
+    event_collection = db['events']
+    event_collection.remove({"username": username})
+    event_collection.insert_one(result)
     print("Merging topics took: ", end - start)
+
+
+def get_events(username):
+
+    with open('../users/' + username + '/config.json') as data_file:
+        config = json.load(data_file)
+
+    client = MongoClient(config['database']['host'], int(config['database']['port']))
+    db = client[config['database']['db']]
+    event_collection = db['events']
+    result = event_collection.find_one({"username": username})
+    result.pop('_id', None)
+    result.pop('username', None)
+    return result
+

@@ -56,8 +56,4 @@ class Topic:
         for tweet_tuple in self.relevant_tweets + other_topic.relevant_tweets:
             if tweet_tuple[1] not in relevant_tweets_map:
                 relevant_tweets_map[tweet_tuple[1]] = tweet_tuple[0]
-        self.relevant_tweets = [(relevant_tweets_map[tweet], tweet) for tweet in relevant_tweets_map ]
-
-
-
-
+        self.relevant_tweets = [(relevant_tweets_map[tweet], tweet) for tweet in relevant_tweets_map]

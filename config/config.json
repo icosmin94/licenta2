@@ -19,6 +19,10 @@
     "nr_topics": "10",
     "topic_collection_name": "topics",
     "topic_words_nr": "8",
+    "tweet_per_topic": "3",
+    "tweet_threshold": "0.06"
+  },
+  "events": {
     "merge_threshold": "0.5",
     "granularity": "0.1"
   }

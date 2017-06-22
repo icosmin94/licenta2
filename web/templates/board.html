@@ -42,19 +42,21 @@
                     <td colspan="6" >
                         <p  class="control_panel_element" id="file"> </p>
                     </td>
-                </tr>
-                <tr>
                      <td colspan="4">
                          <div class="file-button control_panel_element" id="load_tweets">Load Tweets</div>
                      </td>
                     <td> <div class="control_panel_element"><div id="load_tweets_icon"></div></div></td>
-                    <td colspan="4"> <p class="file-button control_panel_element" id="create_topics">Create Topics</p></td>
-                    <td> <div class="control_panel_element"><div id="create_topics_icon"></div></div></td>
-                    <td colspan="4"> <p class="file-button control_panel_element" id ="show_events">Show Events</p></td>
-                   <td> <div class="control_panel_element"><div id="events_icon"></div></div></td>
                 </tr>
                 <tr>
-                    {% for i in range(0,23) %}
+                    <td colspan="4"> <p class="file-button control_panel_element" id="create_topics">Create Topics</p></td>
+                    <td> <div class="control_panel_element"><div id="create_topics_icon"></div></div></td>
+                    <td colspan="4"> <p class="file-button control_panel_element" id ="process_events">Process Events</p></td>
+                   <td> <div class="control_panel_element"><div id="process_events_icon"></div></div></td>
+                    <td colspan="4"> <p class="file-button control_panel_element" id ="show_events">Show Events</p></td>
+                   <td> <div class="control_panel_element"><div id="show_events_icon"></div></div></td>
+                </tr>
+                <tr>
+                    {% for i in range(0,15) %}
                     <td> <p class="control_panel_element"></p></td>
                     {% endfor %}
                 </tr>
@@ -63,7 +65,6 @@
         </form>
 
         <div class="graphs">
-            <div id="graph"  style="width: 480px; height: 400px;"></div>
 
         </div>
     </div>

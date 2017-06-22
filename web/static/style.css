@@ -316,9 +316,11 @@ body {
     background-color:#fcfcfc;
     border: 1px solid #ccc ;
     border-radius: 10px;
-    max-width:1200px;
+    max-width:1000px;
     min-width:700px;
-    overflow: auto;
+    height:600px;
+    overflow:scroll;
+
 }
 
 .file-button {
@@ -337,15 +339,15 @@ body {
     text-align: center;
 }
 .control_panel {
-    margin-left:10px;
+    margin-left:150px;
     margin-top:10px;
     padding-left:5px;
     margin-bottom:15px;
 
+
 }
 .control_panel td {
     width:50px;
-    border: 1px solid black;
 }
 .control_panel_element {
     width: 70%;
@@ -385,7 +387,7 @@ body {
     animation: spin 0.5s linear infinite;
     visibility: hidden;
 }
-#events_icon {
+#process_events_icon {
     border: 2px solid white; /* Light grey */
     border-top: 2px solid #3498db; /* Blue */
     border-radius: 50%;
@@ -393,4 +395,24 @@ body {
     height: 12px;
     animation: spin 0.5s linear infinite;
     visibility: hidden;
+}
+#show_events_icon {
+    border: 2px solid white; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 0.5s linear infinite;
+    visibility: hidden;
+}
+.graph {
+    border:1px solid black;
+    margin: 30px auto;
+    width: 700px;
+    height: 450px;
+
+}
+.graph:hover {
+    border:1px solid #0e7df4;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }

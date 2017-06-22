@@ -42,14 +42,12 @@ $(document).ready(function () {
     $(document).on("click", "#create_topics", function(){
         create_topics(state);
     });
+    $(document).on("click", "#process_events", function(){
+        process_events(state);
+    });
     $(document).on("click", "#show_events", function(){
         show_events(state);
     });
-    TESTER = document.getElementById('graph');
-	Plotly.plot( TESTER, [{
-	x: [1, 2, 3, 4, 5],
-	y: [1, 2, 4, 8, 16] }], {
-	margin: { t: 0 } } );
 
 });
 function show_events(state) {
@@ -58,18 +56,88 @@ function show_events(state) {
         request.open("POST", "/show_events", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         var params = JSON.stringify({'action' : 'show_events'});
-        $("#events_icon").css("visibility", "visible");
+        $("#show_events_icon").css("visibility", "visible");
         state['clicked'] = true;
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 200) {
-                console.log(request.responseText)
+                var result = JSON.parse(request.responseText);
+                draw_graphs(result);
                 state['clicked'] = false;
-                $("#events_icon").css("visibility", "hidden");
+                $("#show_events_icon").css("visibility", "hidden");
             }
        }
        request.send("jsonData="+params);
    }
 }
+function process_events(state) {
+   if (state['clicked'] == false) {
+        var request = new XMLHttpRequest();
+        request.open("POST", "/process_events", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action' : 'process_events'});
+        $("#process_events_icon").css("visibility", "visible");
+        state['clicked'] = true;
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                state['clicked'] = false;
+                $("#process_events_icon").css("visibility", "hidden");
+            }
+       }
+       request.send("jsonData="+params);
+   }
+}
+
+function draw_graphs(result) {
+    console.log(result);
+    var keys = Object.keys(result);
+    for (var i = 0, len = keys.length; i < len; i++) {
+        console.log(keys[i]);
+        $('.graphs').append('<div class="graph" id="graph'+i+'"></div>');
+        draw_graph(result[i], 'graph'+i);
+    }
+}
+
+function draw_graph(event, id) {
+     var trace = {
+      x: event['x'],
+      y: event['y'],
+      mode: 'lines+markers',
+      name: 'Tweets/Hour'
+    };
+    var data = [trace];
+    var x_axis_template = {
+        showgrid: true,
+        zeroline: false,
+        nticks: event['x'].length,
+        showline: false,
+        title: 'Time',
+        mirror: 'all'
+    };
+      var y_axis_template = {
+        showgrid: true,
+        zeroline: true,
+        nticks: 10,
+        showline: false,
+        title: 'Tweets',
+        mirror: 'all'
+    };
+    var layout = {
+      showlegend: true,
+      xaxis: x_axis_template,
+      yaxis: y_axis_template,
+      title: event['title'],
+      titlefont: {
+        size: 12
+      },
+    };
+    var fig = {
+        data: data,
+        layout: layout
+    };
+
+    Plotly.newPlot(document.getElementById(id), fig);
+}
+
 function create_topics(state) {
    if (state['clicked'] == false) {
         var request = new XMLHttpRequest();
@@ -111,8 +179,10 @@ function load_tweets(state) {
 }
 
 function send_config_update(config) {
-    config['topics']['granularity'] = $( "#slider-granularity" ).slider( "value");
-    config['topics']['merge_threshold'] = $( "#slider-threshold" ).slider( "value");
+     config['topics']['tweet_per_topic'] = $( "#slider-tweet_topic" ).slider( "value");
+    config['topics']['tweet_threshold'] = $( "#slider-tweet_threshold" ).slider( "value");
+    config['events']['granularity'] = $( "#slider-granularity" ).slider( "value");
+    config['events']['merge_threshold'] = $( "#slider-threshold" ).slider( "value");
     config['topics']['topic_words_nr'] =  $( "#slider-words" ).slider( "value");
     config['topics']['nr_topics'] =  $( "#slider-topics" ).slider( "value");
     config['general']['batch_size'] = $( "#slider-batch" ).slider( "value");
@@ -320,7 +390,7 @@ function setSliders(config) {
      $( "#slider-threshold" ).slider({
           min: 0.1,
           max: 1,
-          value:  config['topics']['merge_threshold'],
+          value:  config['events']['merge_threshold'],
           step: 0.1,
           slide: function( event, ui ) {
               document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
@@ -330,14 +400,38 @@ function setSliders(config) {
                 "Value: " + $( "#slider-threshold" ).slider( "value");
 
      $( "#slider-granularity" ).slider({
-          min: 0.1,
+          min: 0.05,
           max: 1,
-          value: config['topics']['granularity'],
-          step: 0.1,
+          value: config['events']['granularity'],
+          step: 0.05,
           slide: function( event, ui ) {
               document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
           }
     });
     document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML =
                 "Value: " + $( "#slider-granularity" ).slider( "value");
+
+    $("#slider-tweet_topic").slider({
+          min: 1,
+          max: 10,
+          value: config['topics']['tweet_per_topic'],
+          step: 1,
+          slide: function( event, ui ) {
+              document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+          }
+    });
+    document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML =
+                "Value: " + $( "#slider-tweet_topic" ).slider( "value");
+
+     $("#slider-tweet_threshold").slider({
+          min: 0.06,
+          max: 0.1,
+          value: config['topics']['tweet_threshold'],
+          step: 0.001,
+          slide: function( event, ui ) {
+              document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+          }
+    });
+    document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML =
+                "Value: " + $( "#slider-tweet_threshold" ).slider( "value");
 }

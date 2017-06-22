@@ -11,7 +11,7 @@ from pprint import pprint
 from pymongo import MongoClient
 
 from create_topics import create_and_store_topics
-from events import show_events
+from events import process_events, get_events
 from load_tweets import load_tweets
 
 app = Flask(__name__)
@@ -38,10 +38,16 @@ def index():
             return render_template('index.html')
 
 
+@app.route('/process_events', methods=['POST'])
+def process_events_call():
+    process_events(session.get('user_name'))
+    return render_template('response.html', message="ok")
+
+
 @app.route('/show_events', methods=['POST'])
 def show_events_call():
-    show_events(session.get('user_name'))
-    return render_template('response.html', message="ok")
+    result = get_events(session.get('user_name'))
+    return jsonify(result)
 
 
 @app.route('/create_topics', methods=['POST'])

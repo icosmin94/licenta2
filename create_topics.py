@@ -22,6 +22,8 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
     nr_topics = int(config['topics']['nr_topics'])
     topic_words_nr = int(config['topics']['topic_words_nr'])
     topics_list = []
+    tweet_per_topic_number = int(config['topics']['tweet_per_topic'])
+    tweet_threshold = int(config['topics']['tweet_threshold'])
 
     # get tweets from db
     client = MongoClient(config['database']['host'], int(config['database']['port']))
@@ -87,8 +89,8 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
     for tweet_per_topic in relevant_tweets:
         tweet_topic_pairs = [(tweet_per_topic[i], i) for i in range(0, nr_topics)]
         tweet_topic_pairs = sorted(tweet_topic_pairs,  key=lambda x: x[0], reverse=True)
-        for j in range(0, 4):
-            if tweet_topic_pairs[j][0] > 0.1:
+        for j in range(0, tweet_per_topic_number):
+            if tweet_topic_pairs[j][0] > tweet_threshold:
                 topics_list[tweet_topic_pairs[j][1]].relevant_tweets.append(
                     (tweet_topic_pairs[j][0], tweets[index]._id))
 
@@ -111,7 +113,7 @@ def create_and_store_topics(username):
     concurrent_tasks = int(config['general']['concurrent_tasks'])
     topic_collection = db[config['topics']['topic_collection_name']]
     # add index on date-time and user_name
-    topic_collection.create_index([("start_datetime", pymongo.ASCENDING), ("username", pymongo.ASCENDING)])
+    topic_collection.create_index([("username", pymongo.ASCENDING)])
     topic_collection.remove({"username": username})
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
 
