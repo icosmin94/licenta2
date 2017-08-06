@@ -1,12 +1,9 @@
-import configparser
 import os
 from shutil import copyfile, copy
 
-import time
 from flask import Flask, redirect, url_for, request, render_template, make_response, session, jsonify
 
 import json
-from pprint import pprint
 
 from pymongo import MongoClient
 
@@ -23,6 +20,11 @@ def logout():
     return render_template('response.html', message="ok")
 
 
+@app.route('/pagina')
+def pagina():
+    return render_template('pagina.html')
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if request.method == 'POST':
@@ -35,7 +37,7 @@ def index():
         if session.get('user_name'):
             return redirect(url_for('board'))
         else:
-            return render_template('index.html')
+            return render_template('pagina.html')
 
 
 @app.route('/process_events', methods=['POST'])
@@ -67,9 +69,42 @@ def load_tweets_call():
     return render_template('response.html', message="ok")
 
 
+@app.route('/create_session', methods=['POST'])
+def create_session():
+    sessions = db['sessions']
+    result = sessions.find_one({'user_name': session.get('user_name')})
+    if result is None:
+        sessions.insert_one({'user_name': session.get('user_name'), 'counter': 1, 'sessions': ['Session 1']})
+        sessions_list = ['Session 1']
+    else:
+        sessions.remove({'user_name': session.get('user_name')})
+        sessions_list = result['sessions'] + ['Session ' + str(result['counter'] + 1)]
+        sessions.insert_one(
+            {'user_name': session.get('user_name'), 'counter': result['counter'] + 1,
+             'sessions': sessions_list})
+    return jsonify({'sessions': sessions_list})
+
+
+@app.route('/show_session', methods=['POST'])
+def show_session():
+    sessions = db['sessions']
+    result = sessions.find_one({'user_name': session.get('user_name')})
+    if result is None:
+        sessions_list = []
+    else:
+        sessions_list = result['sessions']
+        data = json.loads(request.form['jsonData'])
+        if data['action'] == 'delete':
+            sessions_list.remove(data['id'])
+            result['sessions'] = sessions_list;
+            sessions.remove({'user_name': session.get('user_name')})
+            sessions.insert_one(result)
+    return jsonify({'sessions': sessions_list})
+
+
 @app.route('/board', methods=['POST', 'GET'])
 def board():
-    return render_template('board.html', user=session['user_name'])
+    return render_template('new_board.html', user=session['user_name'])
 
 
 @app.route('/get_config', methods=['POST'])
@@ -106,7 +141,8 @@ def check_credentials():
                 login_id = field['value']
             if field['name'] == 'login_password':
                 login_password = field['value']
-        result = users.find_one({"$and": [{"$or": [{'user_name': login_id}, {'user_email': login_id}]}, {'password': login_password}]})
+        result = users.find_one(
+            {"$and": [{"$or": [{'user_name': login_id}, {'user_email': login_id}]}, {'password': login_password}]})
         if result is None:
             return render_template('response.html', message="=error")
         else:

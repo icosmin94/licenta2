@@ -1,21 +1,32 @@
 $(document).ready(function () {
     $(document).on("click", "#login", function(){
+        event.preventDefault();
         login_signup_show('login');
     });
     $(document).on("click", "#signup", function(){
+        event.preventDefault();
         login_signup_show('signup');
     });
+
     $(document).on("click", "#logout", function(){
         logout();
     });
     $(document).on("click", "#config", function(){
         window.location.href = "/config";
     });
-     $(document).on("click", "#board", function(){
-        window.location.href = "/board";
+     $(document).on("click", "#username", function(){
+        event.preventDefault();
     });
+
+    $(".nav a").on("click", function(){
+       $(".nav").find(".active").removeClass("active");
+       $(this).parent().addClass("active");
+    });
+    var action = {'action': 'show'} ;
+    show_sessions(action);
+
     var config;
-    if (location.pathname.substring(1).includes("config")) {
+    if (location.pathname.substring(1).includes("board")) {
         var request = new XMLHttpRequest();
         request.open("POST", "/get_config", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -48,8 +59,59 @@ $(document).ready(function () {
     $(document).on("click", "#show_events", function(){
         show_events(state);
     });
+    $("#create_session").on("click", function(){
+        var request = new XMLHttpRequest();
+        request.open("POST", "/create_session", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action' : 'create_new_session'});
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+               var sessions = JSON.parse(request.responseText)['sessions'];
+                console.log(sessions);
+                $("#sel1").empty();
+                 $.each(sessions, function (index, value) {
+                    $('<option>').text(value).appendTo($("#sel1"));
+                });
+            }
+       }
+        request.send("jsonData="+params);
+    });
+    $("#delete_session").on("click", function() {
+        var id = $('#sel1').find(":selected").text();
+        if (id != '') {
+          var action = {'action': 'delete', 'id': id };
+          show_sessions(action);
+          console.log(action);
+        }
+    });
 
 });
+
+function show_sessions(action) {
+      var request = new XMLHttpRequest();
+      request.open("POST", "/show_session", true);
+      request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      var params = null;
+      if (action['action'] == 'show') {
+        params = JSON.stringify({'action' : 'show_session'});
+      } else {
+        params = JSON.stringify({'action': 'delete', 'id': action['id'] });
+      }
+
+      request.onreadystatechange = function() {
+          if (request.readyState == 4 && request.status == 200) {
+             var sessions = JSON.parse(request.responseText)['sessions'];
+              console.log(sessions);
+              $("#sel1").empty();
+              $.each(sessions, function (index, value) {
+                 $('<option>').text(value).appendTo($("#sel1"));
+              });
+          }
+      }
+      request.send("jsonData="+params);
+}
+
+
 function show_events(state) {
    if (state['clicked'] == false) {
         var request = new XMLHttpRequest();
@@ -248,7 +310,7 @@ function login() {
     password = $("#password").val();
 
     if (id =="" || password=="") {
-        $("#error_message").html("please complete all fields")
+        $("#error_message").html("<strong>Error ! </strong> Please complete both fields")
         $("#error_message").css("visibility", "visible");
         return;
     }
@@ -256,7 +318,7 @@ function login() {
 
     request.open("POST", "/check_credentials", true);
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    var form = $(".login_form").serializeArray();
+    var form = $("#login_form").serializeArray();
     var params = JSON.stringify({'action' : 'login', 'form': form });
 
     request.onreadystatechange = function() {
@@ -265,7 +327,7 @@ function login() {
             if (request.responseText=="ok") {
                  window.location.href = "/board";
             } else {
-                 $("#error_message").html("Log In failed")
+                 $("#error_message").html("<strong>Error ! </strong> Incorrect Username or Password")
                 $("#error_message").css("visibility", "visible");
                 $("#id").val("");
                 $("#password").val("");
@@ -281,7 +343,7 @@ function signup() {
     password = $("#password").val();
     confirm_password = $("#confirm_password").val();
     if (password != confirm_password) {
-        $("#error_message").html("passwords are not identical")
+        $("#error_message").html("<strong>Error ! </strong> Passwords are not identical")
         $("#error_message").css("visibility", "visible");
         return;
     }
@@ -290,12 +352,12 @@ function signup() {
     signup_username = $("#signup_username").val();
 
     if (signup_email =="" || signup_username=="" || password=="") {
-        $("#error_message").html("please complete all fields")
+        $("#error_message").html("<strong>Error ! </strong> Please complete all fields")
         $("#error_message").css("visibility", "visible");
         return;
     }
     var request = new XMLHttpRequest();
-    var form = $(".signup_form").serializeArray();
+    var form = $("#signup_form").serializeArray();
 
     request.open("POST", "/check_credentials", true);
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -306,7 +368,7 @@ function signup() {
             if (request.responseText=="ok") {
                 window.location.href = "/board";
             } else {
-                 $("#error_message").html("Sign up failed")
+                 $("#error_message").html("<strong>Error ! </strong> Sign Up failed. Username or email already exists")
                 $("#error_message").css("visibility", "visible");
                 $("#signup_email").val("");
                 $("#password").val("");
