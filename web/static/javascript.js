@@ -32,6 +32,7 @@ $(document).ready(function () {
 
     var config;
     if (location.pathname.substring(1).includes("board")) {
+        setInterval(get_progress, 1000);
         set_session_functionality();
         var request = new XMLHttpRequest();
         request.open("POST", "/get_config", true);
@@ -42,16 +43,10 @@ $(document).ready(function () {
             if (request.readyState == 4 && request.status == 200) {
                 config = JSON.parse(request.responseText);
                 setSliders(config);
-                // setDatabaseInputFields(config);
             }
         }
         request.send("jsonData=" + params);
     }
-    ;
-    /*    $(document).on("click", "#config_button", function(){
-     config = send_config_update(config);
-     window.location.href = "/board";
-     });*/
 
     var state = {'clicked': false};
     $(document).on("click", "#load_tweets", function () {
@@ -121,6 +116,21 @@ function show_sessions(action) {
     request.send("jsonData=" + params);
 }
 
+function get_progress() {
+    var request = new XMLHttpRequest();
+    request.open("POST", "/get_progress", true);
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+            var progress = JSON.parse(request.responseText);
+            $('.progress-bar').css('width', progress+'%');
+            $('.progress-bar').html(progress+'%');
+        }
+    };
+    request.send();
+}
+
 
 function show_events(state) {
     if (state['clicked'] == false) {
@@ -154,7 +164,7 @@ function process_events(state) {
                 state['clicked'] = false;
                 $("#process_events_icon").css("visibility", "hidden");
             }
-        }
+        };
         request.send("jsonData=" + params);
     }
 }
@@ -274,29 +284,6 @@ function send_config_update(config) {
 
     return config;
 
-}
-function setDatabaseInputFields(config) {
-    $("#host").val(config['database']['host']);
-    $("#port").val(config['database']['port']);
-    $("#db").val(config['database']['db']);
-}
-function config() {
-    var request = new XMLHttpRequest();
-
-    request.open("POST", "/config", true);
-    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    var params = JSON.stringify({'action': 'config'});
-
-    request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200) {
-            console.log(request.responseText);
-            configJson = JSON.parse(request.responseText);
-            console.log(configJson['user']);
-
-        }
-    }
-
-    request.send("jsonData=" + params);
 }
 
 function logout() {

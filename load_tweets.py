@@ -85,10 +85,15 @@ def load_tweets(username, filename, params):
     futures = []
     date_hour_dict = {}
     start = time.time()
+    tweets_in_file = 0
     with open(tweetsFile) as fp:
         for line in fp:
             line_number += 1
-            if line_number > 1:
+            if line_number == 1:
+                tweets_in_file = line
+                print("total number", tweets_in_file)
+                return
+            if line_number > 2:
                 tweets_in_batch += 1
                 lines += [line]
                 if tweets_in_batch == batch_size:

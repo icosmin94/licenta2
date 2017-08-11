@@ -17,6 +17,7 @@ app = Flask(__name__)
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('user_name', None)
+    session['percent_complete'] = 2
     return render_template('response.html', message="ok")
 
 
@@ -98,10 +99,17 @@ def show_session():
         data = json.loads(request.form['jsonData'])
         if data['action'] == 'delete':
             sessions_list.remove(data['id'])
-            result['sessions'] = sessions_list;
+            clean_up(session.get('user_name'), data['id'])
+            result['sessions'] = sessions_list
             sessions.remove({'user_name': session.get('user_name')})
             sessions.insert_one(result)
     return jsonify({'sessions': sessions_list})
+
+
+def clean_up(username, session_number):
+    tweets_collection.remove({'username': username, 'session': session_number})
+    date_hour_collection.remove({'username': username, 'session': session_number})
+    print("Deleting data for user:", username, " session:", session_number)
 
 
 @app.route('/board', methods=['POST', 'GET'])
@@ -124,10 +132,9 @@ def set_config():
     return render_template('response.html', message="ok")
 
 
-@app.route('/config', methods=['POST', 'GET'])
-def config():
-    config['user'] = session.get('user_name')
-    return render_template('config.html', user=session['user_name'])
+@app.route('/get_progress', methods=['POST'])
+def get_progress():
+    return jsonify(str(session['percent_complete']))
 
 
 @app.route('/check_credentials', methods=['POST'])
@@ -149,6 +156,7 @@ def check_credentials():
             return render_template('response.html', message="=error")
         else:
             session['user_name'] = result['user_name']
+            session['percent_complete'] = 0
             return render_template('response.html', message="ok")
     if data['action'] == 'signup':
         form_fields = data['form']
@@ -167,6 +175,7 @@ def check_credentials():
         if result is None:
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
             session['user_name'] = signup_username
+            session['percent_complete'] = 0
             if not os.path.exists("../users/" + signup_username):
                 os.makedirs("../users/" + signup_username)
                 os.chmod(os.path.abspath("../users/" + signup_username+"/"), 0o777)
@@ -187,6 +196,8 @@ if __name__ == '__main__':
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     users = db['users']
+    tweets_collection = db[config['tweets']['collection_name']]
+    date_hour_collection = db[config['tweets']['date_hour_collection_name']]
 
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
                      "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
