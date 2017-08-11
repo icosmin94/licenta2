@@ -1,4 +1,3 @@
-import configparser
 from concurrent.futures import ProcessPoolExecutor
 import time
 import pymongo
@@ -16,10 +15,11 @@ def merge_date_hour_dict(dict1, dict2):
             dict1[date] = dict2[date]
 
 
-def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config, task_number, username):
+def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer, config, task_number, username,
+                            session_number):
     print("Started task", task_number, ": processing:", lines.__len__(), "tweets")
-    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer, username).__dict__ for tweet_line
-              in lines]
+    tweets = [create_tweet(tweet_line, contractions, stop_words, word_net_lemmatizer, username, session_number).__dict__
+              for tweet_line in lines]
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
@@ -43,22 +43,28 @@ def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer
     return date_hour_dict
 
 
-def load_tweets(username, filename):
-
-    with open('../users/' + username+'/config.json') as data_file:
+def load_tweets(username, filename, params):
+    with open('../users/' + username + '/config.json') as data_file:
         config = json.load(data_file)
 
     tweetsFile = filename
+    config['tweets']['threads_number'] = params['threads']
+    config['tweets']['batch_size'] = params['batch']
+    session_number = params['session']
+
+    with open('../users/' + username + '/config.json', 'w') as outfile:
+        json.dump(config, outfile)
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     tweets_collection = db[config['tweets']['collection_name']]
-    # create index on date and user_name
-    tweets_collection.create_index([("date_time", pymongo.ASCENDING), ("username", pymongo.ASCENDING)])
+    # create index on date, user_name and session
+    tweets_collection.create_index(
+        [("date_time", pymongo.ASCENDING), ("username", pymongo.ASCENDING), ('session', pymongo.ASCENDING)])
 
-    batch_size = int(config['general']['batch_size'])
-    concurrent_tasks = int(config['general']['concurrent_tasks'])
-    executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
+    batch_size = int(config['tweets']['batch_size'])
+    threads_number = int(config['tweets']['threads_number'])
+    executor = ProcessPoolExecutor(max_workers=threads_number)
     word_net_lemmatizer = WordNetLemmatizer()
     word_net_lemmatizer.lemmatize("dogs")
 
@@ -89,11 +95,11 @@ def load_tweets(username, filename):
                     submitted_lines = lines[:]
 
                     futures += [executor.submit(create_and_store_tweets, submitted_lines, contractions, stop_words,
-                                                word_net_lemmatizer, config, task_number, username)]
+                                                word_net_lemmatizer, config, task_number, username, session_number)]
                     tweets_in_batch = 0
                     lines = []
                     task_number += 1
-                    if task_number % concurrent_tasks == 0:
+                    if task_number % threads_number == 0:
                         for future in futures:
                             merge_date_hour_dict(date_hour_dict, future.result())
                         futures = []
@@ -101,7 +107,7 @@ def load_tweets(username, filename):
     if lines.__len__() > 0:
         submitted_lines = lines[:]
         futures += [executor.submit(create_and_store_tweets, submitted_lines, contractions, stop_words,
-                                    word_net_lemmatizer, config, task_number, username)]
+                                    word_net_lemmatizer, config, task_number, username, session_number)]
 
     for future in futures:
         merge_date_hour_dict(date_hour_dict, future.result())
@@ -116,12 +122,11 @@ def load_tweets(username, filename):
 
     end = time.time()
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
-    previous_date_hour = date_hour_collection.find_one({'username': username})
+    previous_date_hour = date_hour_collection.find_one({'username': username, 'session': session_number})
 
     if previous_date_hour is not None:
         date_hour_list = list(set(previous_date_hour['dates'] + date_hour_list))
         date_hour_collection.drop()
-    date_hour_collection.insert({"dates": date_hour_list, 'username': username})
+    date_hour_collection.insert({"dates": date_hour_list, 'username': username, 'session': session_number})
 
     print("Processing tweets took: ", end - start)
-

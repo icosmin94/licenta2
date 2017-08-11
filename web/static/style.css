@@ -36,3 +36,28 @@
         margin-left:50px;
     }
 }
+.slider-value {
+}
+.ui-slider-horizontal {
+    height: 16px;
+}
+.ui-slider .ui-slider-handle {
+    height: 24px;
+    width: 15px;
+    padding-left: 5px;
+}
+.special_element {
+    margin-top:15px;
+    margin-bottom:15px;
+}
+.special_element2 {
+    margin-top:5px;
+}
+#upload {
+   opacity: 0;
+   position: absolute;
+   z-index: -1;
+}
+#upload_label {
+    cursor: pointer;
+}

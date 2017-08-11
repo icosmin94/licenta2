@@ -65,7 +65,9 @@ def load_tweets_call():
     f = request.files['upload']
     filename = "../users/" + session.get('user_name') + "/files/"+f.filename
     f.save(filename)
-    load_tweets(session.get('user_name'), filename)
+    params = json.loads(request.form['jsonData'])
+
+    load_tweets(session.get('user_name'), filename, params)
     return render_template('response.html', message="ok")
 
 
