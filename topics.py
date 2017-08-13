@@ -2,13 +2,14 @@ from math import sqrt
 
 
 class Topic:
-    def __init__(self, start_datetime="", stop_datetime="", username=""):
+    def __init__(self, start_datetime="", stop_datetime="", username="", session=""):
         self.start_datetime = start_datetime
         self.stop_datetime = stop_datetime
         self.relevant_words = []
         self.relevant_tweets = []
         self.merge_count = 0
         self.username = username
+        self.session = session
 
     @staticmethod
     def create_topic(entries):

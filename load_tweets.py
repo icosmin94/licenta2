@@ -43,7 +43,7 @@ def create_and_store_tweets(lines, contractions, stop_words, word_net_lemmatizer
     return date_hour_dict
 
 
-def load_tweets(username, filename, params):
+def load_tweets(username, filename, params, progress_tracker):
     with open('../users/' + username + '/config.json') as data_file:
         config = json.load(data_file)
 
@@ -86,13 +86,12 @@ def load_tweets(username, filename, params):
     date_hour_dict = {}
     start = time.time()
     tweets_in_file = 0
+    progress_tracker[username] = 2
     with open(tweetsFile) as fp:
         for line in fp:
             line_number += 1
             if line_number == 1:
-                tweets_in_file = line
-                print("total number", tweets_in_file)
-                return
+                tweets_in_file = int(line)
             if line_number > 2:
                 tweets_in_batch += 1
                 lines += [line]
@@ -107,6 +106,9 @@ def load_tweets(username, filename, params):
                     if task_number % threads_number == 0:
                         for future in futures:
                             merge_date_hour_dict(date_hour_dict, future.result())
+                            progress_tracker[username] = min(
+                                progress_tracker[username] + batch_size*100 / tweets_in_file,
+                                98.0)
                         futures = []
 
     if lines.__len__() > 0:
@@ -116,6 +118,8 @@ def load_tweets(username, filename, params):
 
     for future in futures:
         merge_date_hour_dict(date_hour_dict, future.result())
+        progress_tracker[username] = min(progress_tracker[username] + batch_size*100 / tweets_in_file,
+                                         98.0)
 
     date_hour_list = []
     for date in date_hour_dict:
@@ -134,4 +138,5 @@ def load_tweets(username, filename, params):
         date_hour_collection.drop()
     date_hour_collection.insert({"dates": date_hour_list, 'username': username, 'session': session_number})
 
+    progress_tracker[username] = 100
     print("Processing tweets took: ", end - start)

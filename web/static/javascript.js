@@ -32,7 +32,7 @@ $(document).ready(function () {
 
     var config;
     if (location.pathname.substring(1).includes("board")) {
-        setInterval(get_progress, 1000);
+        setInterval(get_progress, 5000);
         set_session_functionality();
         var request = new XMLHttpRequest();
         request.open("POST", "/get_config", true);
@@ -126,6 +126,12 @@ function get_progress() {
             var progress = JSON.parse(request.responseText);
             $('.progress-bar').css('width', progress+'%');
             $('.progress-bar').html(progress+'%');
+
+            if(progress == 100) {
+                $('.progress-bar').removeClass("active");
+            } else {
+                $('.progress-bar').addClass("active");
+            }
         }
     };
     request.send();
@@ -225,14 +231,19 @@ function create_topics(state) {
         var request = new XMLHttpRequest();
         request.open("POST", "/create_topics", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = JSON.stringify({'action': 'create_topics'});
-        $("#create_topics_icon").css("visibility", "visible");
+        var params = JSON.stringify({
+            'nr_topics': $j("#slider-topics").slider("value"),
+            'topic_words_nr': $j("#slider-words").slider("value"),
+            'tweet_per_topic': $j("#slider-tweet_topic").slider("value"),
+            'tweet_threshold': $j("#slider-tweet_threshold").slider("value"),
+            'session': $("#sel1").val()
+        });
+
         state['clicked'] = true;
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
-                console.log(request.responseText)
+                console.log(request.responseText);
                 state['clicked'] = false;
-                $("#create_topics_icon").css("visibility", "hidden");
             }
         }
         request.send("jsonData=" + params);
@@ -248,6 +259,7 @@ function load_tweets(state) {
         });
         form_data.append('jsonData', params);
         state['clicked'] = true;
+        console.log("Calling load tweets");
         $.ajax({
             type: 'POST',
             url: '/load_tweets',
@@ -262,28 +274,6 @@ function load_tweets(state) {
             },
         });
     }
-}
-
-function send_config_update(config) {
-    config['topics']['tweet_per_topic'] = $("#slider-tweet_topic").slider("value");
-    config['topics']['tweet_threshold'] = $("#slider-tweet_threshold").slider("value");
-    config['events']['granularity'] = $("#slider-granularity").slider("value");
-    config['events']['merge_threshold'] = $("#slider-threshold").slider("value");
-    config['topics']['topic_words_nr'] = $("#slider-words").slider("value");
-    config['topics']['nr_topics'] = $("#slider-topics").slider("value");
-    config['general']['batch_size'] = $("#slider-batch").slider("value");
-    config['general']['concurrent_tasks'] = $("#slider-threads").slider("value");
-    config['database']['host'] = $("#host").val();
-    config['database']['port'] = $("#port").val();
-    config['database']['db'] = $("#db").val();
-    var request = new XMLHttpRequest();
-    request.open("POST", "/set_config", true);
-    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    var params = JSON.stringify(config);
-    request.send("jsonData=" + params);
-
-    return config;
-
 }
 
 function logout() {
@@ -425,43 +415,68 @@ function setSliders(config) {
     });
     document.getElementById("slider-batch").parentNode.firstElementChild.innerHTML =
         "Batch Size: " + $j("#slider-batch").slider("value");
-    /*
-     $( "#slider-topics" ).slider({
+
+     $j( "#slider-topics" ).slider({
      min: 1,
      max: 20,
      value: config['topics']['nr_topics'],
      step: 1,
      slide: function( event, ui ) {
-     document.getElementById("slider-topics").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+     document.getElementById("slider-topics").parentNode.firstElementChild.innerHTML = "Topics per Interval: " + ui.value;
      }
      });
      document.getElementById("slider-topics").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-topics" ).slider( "value");
+     "Topics per Interval: " + $j( "#slider-topics" ).slider( "value");
 
-     $( "#slider-words" ).slider({
+     $j( "#slider-words" ).slider({
      min: 1,
      max: 10,
      value: config['topics']['topic_words_nr'],
      step: 1,
      slide: function( event, ui ) {
-     document.getElementById("slider-words").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+     document.getElementById("slider-words").parentNode.firstElementChild.innerHTML = "Words per Topic: " + ui.value;
      }
      });
      document.getElementById("slider-words").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-words" ).slider( "value");
+     "Words per Topic: " + $j( "#slider-words" ).slider( "value");
 
-     $( "#slider-threshold" ).slider({
+     $j("#slider-tweet_topic").slider({
+     min: 1,
+     max: 10,
+     value: config['topics']['tweet_per_topic'],
+     step: 1,
+     slide: function( event, ui ) {
+     document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML = "Words per Topic Membership: " + ui.value;
+     }
+     });
+     document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML =
+     "Words per Topic Membership: " + $j( "#slider-tweet_topic" ).slider( "value");
+
+     $j("#slider-tweet_threshold").slider({
+     min: 0.001,
+     max: 0.1,
+     value: config['topics']['tweet_threshold'],
+     step: 0.001,
+     slide: function( event, ui ) {
+     document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML = "Tweet Membership Threshold: " + ui.value;
+     }
+     });
+     document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML =
+     "Tweet Membership Threshold: " + $j( "#slider-tweet_threshold" ).slider( "value");
+
+
+     $j( "#slider-threshold" ).slider({
      min: 0.1,
      max: 1,
      value:  config['events']['merge_threshold'],
      step: 0.1,
      slide: function( event, ui ) {
-     document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+     document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML = "Topic Merging Threshold: " + ui.value;
      }
      });
      document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-threshold" ).slider( "value");
-
+     "Topic Merging Threshold: " + $j( "#slider-threshold" ).slider( "value");
+    /*
      $( "#slider-granularity" ).slider({
      min: 0.05,
      max: 1,
@@ -474,27 +489,5 @@ function setSliders(config) {
      document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML =
      "Value: " + $( "#slider-granularity" ).slider( "value");
 
-     $("#slider-tweet_topic").slider({
-     min: 1,
-     max: 10,
-     value: config['topics']['tweet_per_topic'],
-     step: 1,
-     slide: function( event, ui ) {
-     document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
-     }
-     });
-     document.getElementById("slider-tweet_topic").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-tweet_topic" ).slider( "value");
-
-     $("#slider-tweet_threshold").slider({
-     min: 0.001,
-     max: 0.1,
-     value: config['topics']['tweet_threshold'],
-     step: 0.001,
-     slide: function( event, ui ) {
-     document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
-     }
-     });
-     document.getElementById("slider-tweet_threshold").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-tweet_threshold" ).slider( "value");*/
+     */
 }

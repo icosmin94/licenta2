@@ -16,8 +16,8 @@ app = Flask(__name__)
 
 @app.route('/logout', methods=['POST'])
 def logout():
+    progress_tracker.pop(session.get('user_name'), None)
     session.pop('user_name', None)
-    session['percent_complete'] = 2
     return render_template('response.html', message="ok")
 
 
@@ -55,7 +55,8 @@ def show_events_call():
 
 @app.route('/create_topics', methods=['POST'])
 def create_topics_call():
-    create_and_store_topics(session.get('user_name'))
+    params = json.loads(request.form['jsonData'])
+    create_and_store_topics(session.get('user_name'), params, progress_tracker)
     return render_template('response.html', message="ok")
 
 
@@ -65,10 +66,11 @@ def load_tweets_call():
         return render_template('response.html', message="notok")
     f = request.files['upload']
     filename = "../users/" + session.get('user_name') + "/files/"+f.filename
+    print('Saving file')
     f.save(filename)
     params = json.loads(request.form['jsonData'])
-
-    load_tweets(session.get('user_name'), filename, params)
+    print("Calling load_tweets")
+    load_tweets(session.get('user_name'), filename, params, progress_tracker)
     return render_template('response.html', message="ok")
 
 
@@ -134,7 +136,8 @@ def set_config():
 
 @app.route('/get_progress', methods=['POST'])
 def get_progress():
-    return jsonify(str(session['percent_complete']))
+    print(progress_tracker[session.get('user_name')])
+    return jsonify(str(progress_tracker[session.get('user_name')])[0:4])
 
 
 @app.route('/check_credentials', methods=['POST'])
@@ -156,7 +159,7 @@ def check_credentials():
             return render_template('response.html', message="=error")
         else:
             session['user_name'] = result['user_name']
-            session['percent_complete'] = 0
+            progress_tracker[result['user_name']] = 0
             return render_template('response.html', message="ok")
     if data['action'] == 'signup':
         form_fields = data['form']
@@ -175,7 +178,7 @@ def check_credentials():
         if result is None:
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
             session['user_name'] = signup_username
-            session['percent_complete'] = 0
+            progress_tracker[signup_username] = 0
             if not os.path.exists("../users/" + signup_username):
                 os.makedirs("../users/" + signup_username)
                 os.chmod(os.path.abspath("../users/" + signup_username+"/"), 0o777)
@@ -199,6 +202,7 @@ if __name__ == '__main__':
     tweets_collection = db[config['tweets']['collection_name']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
 
+    progress_tracker = {}
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \
                      "t685ndb8d d6b8r98r7nr5rb685d8d6dfuiufbnklb7opn8ym5bi87gkunk7ynit9pytd6d4sb6d86vonpmo89k;hbykdxyr"
     app.run(debug=True, port=8000, threaded=True)

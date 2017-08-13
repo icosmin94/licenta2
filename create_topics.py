@@ -16,7 +16,7 @@ from tweet import Tweet
 from sklearn.decomposition import NMF
 
 
-def compute_nmf(config, start_datetime, stop_datetime, username):
+def compute_nmf(config, start_datetime, stop_datetime, username, session):
     idf = {}
     tweets = []
     nr_topics = int(config['topics']['nr_topics'])
@@ -32,7 +32,8 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
     topic_collection = db[config['topics']['topic_collection_name']]
 
     result = tweets_collection.find(
-        {"$and": [{'date_time': {'$gte': start_datetime, '$lt': stop_datetime}}, {'username': username}]})
+        {"$and": [{'date_time': {'$gte': start_datetime, '$lt': stop_datetime}}, {'username': username},
+                  {'session': session}]})
     for tweet in result:
         tweets += [Tweet.create_tweet(tweet)]
 
@@ -73,7 +74,8 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
 
     # extract topics and relevant tweets
     for topic in topics:
-        topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime, username=username)
+        topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime, username=username,
+                             session=session)
         values = topic.tolist()
         relevant_words = {}
         for i in range(0, values.__len__()):
@@ -102,19 +104,28 @@ def compute_nmf(config, start_datetime, stop_datetime, username):
           "tweets")
 
 
-def create_and_store_topics(username):
+def create_and_store_topics(username, params, progress_tracker):
 
     with open('../users/' + username+'/config.json') as data_file:
         config = json.load(data_file)
 
+    config['topics']['nr_topics'] = params['nr_topics']
+    config['topics']['topic_words_nr'] = params['topic_words_nr']
+    config['topics']['tweet_per_topic'] = params['tweet_per_topic']
+    config['topics']['tweet_threshold'] = params['tweet_threshold']
+    session_number = params['session']
+
+    with open('../users/' + username + '/config.json', 'w') as outfile:
+        json.dump(config, outfile)
+
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
-    concurrent_tasks = int(config['general']['concurrent_tasks'])
+    concurrent_tasks = int(config['tweets']['threads_number'])
     topic_collection = db[config['topics']['topic_collection_name']]
     # add index on date-time and user_name
-    topic_collection.create_index([("username", pymongo.ASCENDING)])
-    topic_collection.remove({"username": username})
+    topic_collection.create_index([("username", pymongo.ASCENDING), ('session', pymongo.ASCENDING)])
+    topic_collection.remove({"username": username, "session": session_number})
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
 
     date_hour_list = date_hour_collection.find_one()['dates']
@@ -125,11 +136,18 @@ def create_and_store_topics(username):
     start_datetime = date_hour_list[0]
     stop_datetime = start_datetime + datetime.timedelta(hours=1)
     limit_datetime = date_hour_list[date_hour_list.__len__() - 1]
+    progress_tracker[username] = 2
 
+    periods = 0
+    while start_datetime <= limit_datetime:
+        start_datetime += datetime.timedelta(minutes=10)
+        periods += 1
+
+    start_datetime = date_hour_list[0]
     # start tf-idf and nmf
     start = time.time()
     while start_datetime <= limit_datetime:
-        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username)]
+        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username, session_number)]
 
         start_datetime += datetime.timedelta(minutes=10)
         stop_datetime += datetime.timedelta(minutes=10)
@@ -137,10 +155,15 @@ def create_and_store_topics(username):
         if task_number % concurrent_tasks == 0:
             for future in futures:
                 future.result()
+                progress_tracker[username] = min(progress_tracker[username] + 100 / periods,
+                                                 98.0)
             futures = []
 
     for future in futures:
         future.result()
+        progress_tracker[username] = min(progress_tracker[username] + 100 / periods,
+                                         98.0)
     end = time.time()
 
+    progress_tracker[username] = 100
     print("Processing nmf took: ", end - start)
