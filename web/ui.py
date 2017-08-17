@@ -8,7 +8,7 @@ import json
 from pymongo import MongoClient
 
 from create_topics import create_and_store_topics
-from events import process_events, get_events
+from events import merge_topics, get_events
 from load_tweets import load_tweets
 
 app = Flask(__name__)
@@ -26,6 +26,11 @@ def pagina():
     return render_template('pagina.html')
 
 
+@app.route('/results')
+def results():
+    return render_template('results.html', user=session['user_name'])
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if request.method == 'POST':
@@ -41,15 +46,17 @@ def index():
             return render_template('pagina.html')
 
 
-@app.route('/process_events', methods=['POST'])
-def process_events_call():
-    process_events(session.get('user_name'))
+@app.route('/merge_topics', methods=['POST'])
+def merge_topics_call():
+    params = json.loads(request.form['jsonData'])
+    merge_topics(session.get('user_name'), params, progress_tracker)
     return render_template('response.html', message="ok")
 
 
 @app.route('/show_events', methods=['POST'])
 def show_events_call():
-    result = get_events(session.get('user_name'))
+    params = json.loads(request.form['jsonData'])
+    result = get_events(session.get('user_name'), params)
     return jsonify(result)
 
 
@@ -136,8 +143,11 @@ def set_config():
 
 @app.route('/get_progress', methods=['POST'])
 def get_progress():
-    print(progress_tracker[session.get('user_name')])
-    return jsonify(str(progress_tracker[session.get('user_name')])[0:4])
+    if session.get('user_name') in progress_tracker:
+        print(progress_tracker[session.get('user_name')])
+        return jsonify(str(progress_tracker[session.get('user_name')])[0:4])
+    else:
+        return jsonify(0)
 
 
 @app.route('/check_credentials', methods=['POST'])

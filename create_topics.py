@@ -50,17 +50,19 @@ def compute_nmf(config, start_datetime, stop_datetime, username, session):
     for word in idf.keys():
         word_indexes[word] = index
         index += 1
+
     index = 0
     row = []
     col = []
     data = []
 
-    # prepare the date for nmf model
+    # prepare the data for nmf model
     for tweet in tweets:
         for word in tweet.words_map:
             row += [index]
             col += [word_indexes[word]]
-            data += [(tweet.words_map[word]/tweet.words_count) * math.log(tweets.__len__()/idf[word])]
+            data += [(tweet.words_map[word] / tweet.words_count) *
+                     math.log(tweets.__len__() / idf[word])]
         index += 1
     row = np.array(row)
     col = np.array(col)
@@ -157,6 +159,7 @@ def create_and_store_topics(username, params, progress_tracker):
                 future.result()
                 progress_tracker[username] = min(progress_tracker[username] + 100 / periods,
                                                  98.0)
+            task_number = 0
             futures = []
 
     for future in futures:

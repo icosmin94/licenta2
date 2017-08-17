@@ -32,7 +32,7 @@ $(document).ready(function () {
 
     var config;
     if (location.pathname.substring(1).includes("board")) {
-        setInterval(get_progress, 5000);
+        setInterval(get_progress, 1000);
         set_session_functionality();
         var request = new XMLHttpRequest();
         request.open("POST", "/get_config", true);
@@ -47,6 +47,20 @@ $(document).ready(function () {
         }
         request.send("jsonData=" + params);
     }
+    if (location.pathname.substring(1).includes("results")) {
+        var request = new XMLHttpRequest();
+        request.open("POST", "/get_config", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action': 'get_config'});
+
+        request.onreadystatechange = function () {
+            if (request.readyState == 4 && request.status == 200) {
+                config = JSON.parse(request.responseText);
+                setEventSlider(config);
+            }
+        }
+        request.send("jsonData=" + params);
+    }
 
     var state = {'clicked': false};
     $(document).on("click", "#load_tweets", function () {
@@ -55,8 +69,8 @@ $(document).ready(function () {
     $(document).on("click", "#create_topics", function () {
         create_topics(state);
     });
-    $(document).on("click", "#process_events", function () {
-        process_events(state);
+    $(document).on("click", "#merge_topics", function () {
+        merge_topics(state);
     });
     $(document).on("click", "#show_events", function () {
         show_events(state);
@@ -143,32 +157,34 @@ function show_events(state) {
         var request = new XMLHttpRequest();
         request.open("POST", "/show_events", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = JSON.stringify({'action': 'show_events'});
-        $("#show_events_icon").css("visibility", "visible");
+         var params = JSON.stringify({
+            'granularity': $j("#slider-granularity").slider("value"),
+            'session': $("#sel1").val()
+        });
         state['clicked'] = true;
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
                 var result = JSON.parse(request.responseText);
                 draw_graphs(result);
                 state['clicked'] = false;
-                $("#show_events_icon").css("visibility", "hidden");
             }
         }
         request.send("jsonData=" + params);
     }
 }
-function process_events(state) {
+function merge_topics(state) {
     if (state['clicked'] == false) {
         var request = new XMLHttpRequest();
-        request.open("POST", "/process_events", true);
+        request.open("POST", "/merge_topics", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        var params = JSON.stringify({'action': 'process_events'});
-        $("#process_events_icon").css("visibility", "visible");
+        var params = JSON.stringify({
+            'merge_threshold': $j("#slider-threshold").slider("value"),
+            'session': $("#sel1").val()
+        });
         state['clicked'] = true;
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
                 state['clicked'] = false;
-                $("#process_events_icon").css("visibility", "hidden");
             }
         };
         request.send("jsonData=" + params);
@@ -178,11 +194,37 @@ function process_events(state) {
 function draw_graphs(result) {
     console.log(result);
     var keys = Object.keys(result);
+     $('.graphs').empty();
+     $('.graphs').append('<div id="myCarousel" class="carousel" data-ride="carousel" data-interval="false">');
+
+    $('#myCarousel').append('<div class="carousel-inner"></div>');
+    $('#myCarousel').append('<ol class="carousel-indicators"></ol>');
+    $('#myCarousel').append('<a class="left carousel-control" href="#myCarousel" data-slide="prev">'+
+                            '<span class="glyphicon glyphicon-chevron-left"></span>'+
+                            '<span class="sr-only">Previous</span>'+
+                          '</a>'+
+                          '<a class="right carousel-control" href="#myCarousel" data-slide="next">'+
+                            '<span class="glyphicon glyphicon-chevron-right"></span>'+
+                            '<span class="sr-only">Next</span>'+
+                          '</a>');
+     $('#myCarousel').carousel();
+
+    var text = "";
     for (var i = 0, len = keys.length; i < len; i++) {
-        console.log(keys[i]);
-        $('.graphs').append('<div class="graph" id="graph' + i + '"></div>');
-        draw_graph(result[i], 'graph' + i);
+
+        if (i==0) {
+             $('<div class="item graph active" id="graph'+i+'"></div>').appendTo('.carousel-inner');
+             $('<li data-target="#myCarousel" data-slide-to="0" class="active"></li>').appendTo('.carousel-indicators');
+        } else {
+            $('<div class="item graph" id="graph'+i+'"></div>').appendTo('.carousel-inner');
+            $('<li data-target="#myCarousel" data-slide-to="'+ i+'" class="active"></li>').appendTo('.carousel-indicators');
+        }
+
+         draw_graph(result[keys[i]], 'graph' + i);
     }
+
+
+    console.log(text);
 }
 
 function draw_graph(event, id) {
@@ -222,7 +264,7 @@ function draw_graph(event, id) {
         data: data,
         layout: layout
     };
-
+    console.log(id);
     Plotly.newPlot(document.getElementById(id), fig);
 }
 
@@ -476,18 +518,18 @@ function setSliders(config) {
      });
      document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML =
      "Topic Merging Threshold: " + $j( "#slider-threshold" ).slider( "value");
-    /*
-     $( "#slider-granularity" ).slider({
+}
+function setEventSlider(config) {
+     $j( "#slider-granularity" ).slider({
      min: 0.05,
      max: 1,
      value: config['events']['granularity'],
      step: 0.05,
      slide: function( event, ui ) {
-     document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML = "Value: " + ui.value;
+     document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML = "Event Granularity: " + ui.value;
      }
      });
      document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML =
-     "Value: " + $( "#slider-granularity" ).slider( "value");
+     "Event Granularity: " + $j( "#slider-granularity" ).slider( "value");
 
-     */
 }

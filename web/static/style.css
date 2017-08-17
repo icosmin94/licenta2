@@ -15,7 +15,7 @@
     width: 170px;
 }
 #session_row_1{
-    margin-top:50px;
+    margin-top:30px;
 }
 #sel1{
     width: 200px;
@@ -60,4 +60,39 @@
 }
 #upload_label {
     cursor: pointer;
+}
+.graphs {
+    padding:0;
+    width:90%;
+    padding-top:10px;
+    padding-bottom:20px;
+    border: 1px solid #ccc ;
+    border-radius: 10px;
+    max-width:800px;
+    min-width:700px;
+    height:620px;
+    margin-bottom: 100px;
+}
+.graph {
+    margin: 30px auto;
+    width: 600px;
+    height: 500px;
+}
+.carousel-control.left,
+.carousel-control.right {
+    background-image: none
+}
+.glyphicon.glyphicon-chevron-right{
+   color: #2a4aff;
+}
+.glyphicon.glyphicon-chevron-left{
+   color: #2a4aff;
+}
+.carousel-indicators li {
+  background-color: #999;
+  background-color: rgba(70,70,70,.25);
+}
+
+.carousel-indicators .active {
+  background-color: #444;
 }
