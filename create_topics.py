@@ -205,7 +205,7 @@ def create_and_store_topics(username, params, progress_tracker):
     # start tf-idf and nmf
     start = time.time()
     while start_datetime <= limit_datetime:
-        futures += [executor.submit(compute_lda, config, start_datetime, stop_datetime, username, session_number)]
+        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username, session_number)]
 
         start_datetime += datetime.timedelta(minutes=10)
         stop_datetime += datetime.timedelta(minutes=10)

@@ -112,12 +112,19 @@ def show_session():
             result['sessions'] = sessions_list
             sessions.remove({'user_name': session.get('user_name')})
             sessions.insert_one(result)
+            progress_tracker[session.get('user_name')] = 100
     return jsonify({'sessions': sessions_list})
 
 
 def clean_up(username, session_number):
+    progress_tracker[session.get('user_name')] = 5
     tweets_collection.remove({'username': username, 'session': session_number})
+    progress_tracker[session.get('user_name')] = 40
     date_hour_collection.remove({'username': username, 'session': session_number})
+    topic_collection.remove({'username': username, 'session': session_number})
+    progress_tracker[session.get('user_name')] = 80
+    event_collection.remove({'username': username, 'session': session_number})
+    progress_tracker[session.get('user_name')] = 95
     print("Deleting data for user:", username, " session:", session_number)
 
 
@@ -211,6 +218,8 @@ if __name__ == '__main__':
     users = db['users']
     tweets_collection = db[config['tweets']['collection_name']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
+    topic_collection = db[config['topics']['topic_collection_name']]
+    event_collection = db['events']
 
     progress_tracker = {}
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \

@@ -30,10 +30,11 @@ $(document).ready(function () {
     var action = {'action': 'show'};
     show_sessions(action);
 
+    var state = {'clicked': false};
     var config;
     if (location.pathname.substring(1).includes("board")) {
         setInterval(get_progress, 1000);
-        set_session_functionality();
+        set_session_functionality(state);
         var request = new XMLHttpRequest();
         request.open("POST", "/get_config", true);
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -44,7 +45,7 @@ $(document).ready(function () {
                 config = JSON.parse(request.responseText);
                 setSliders(config);
             }
-        }
+        };
         request.send("jsonData=" + params);
     }
     if (location.pathname.substring(1).includes("results")) {
@@ -58,11 +59,11 @@ $(document).ready(function () {
                 config = JSON.parse(request.responseText);
                 setEventSlider(config);
             }
-        }
+        };
         request.send("jsonData=" + params);
     }
 
-    var state = {'clicked': false};
+
     $(document).on("click", "#load_tweets", function () {
         load_tweets(state);
     });
@@ -78,7 +79,7 @@ $(document).ready(function () {
 
 });
 
-function set_session_functionality() {
+function set_session_functionality(state) {
     $("#create_session").on("click", function () {
         var request = new XMLHttpRequest();
         request.open("POST", "/create_session", true);
@@ -99,9 +100,11 @@ function set_session_functionality() {
     $("#delete_session").on("click", function () {
         var id = $('#sel1').find(":selected").text();
         if (id != '') {
+            state['clicked'] = true;
             var action = {'action': 'delete', 'id': id};
             show_sessions(action);
             console.log(action);
+            state['clicked'] = false;
         }
     });
 }
