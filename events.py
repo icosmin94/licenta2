@@ -16,6 +16,7 @@ def merge_topics(username, params, progress_tracker):
         config = json.load(data_file)
 
     config['events']['merge_threshold'] = params['merge_threshold']
+    config['tweets']['threads_number'] = params['threads']
     session_number = params['session']
 
     with open('../users/' + username + '/config.json', 'w') as outfile:

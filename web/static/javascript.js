@@ -179,6 +179,7 @@ function merge_topics(state) {
         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         var params = JSON.stringify({
             'merge_threshold': $j("#slider-threshold").slider("value"),
+            'threads': $j("#slider-threads").slider("value"),
             'session': $("#sel1").val()
         });
         state['clicked'] = true;
@@ -278,6 +279,7 @@ function create_topics(state) {
             'topic_words_nr': $j("#slider-words").slider("value"),
             'tweet_per_topic': $j("#slider-tweet_topic").slider("value"),
             'tweet_threshold': $j("#slider-tweet_threshold").slider("value"),
+            'threads': $j("#slider-threads").slider("value"),
             'session': $("#sel1").val()
         });
 

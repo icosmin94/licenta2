@@ -106,6 +106,61 @@ def compute_nmf(config, start_datetime, stop_datetime, username, session):
           "tweets")
 
 
+def compute_lda(config, start_datetime, stop_datetime, username, session):
+    idf = {}
+    tweets = []
+    nr_topics = int(config['topics']['nr_topics'])
+    topic_words_nr = int(config['topics']['topic_words_nr'])
+    topics_list = []
+    tweet_per_topic_number = int(config['topics']['tweet_per_topic'])
+    tweet_threshold = float(config['topics']['tweet_threshold'])
+
+    # get tweets from db
+    client = MongoClient(config['database']['host'], int(config['database']['port']))
+    db = client[config['database']['db']]
+    tweets_collection = db[config['tweets']['collection_name']]
+    topic_collection = db[config['topics']['topic_collection_name']]
+
+    result = tweets_collection.find(
+        {"$and": [{'date_time': {'$gte': start_datetime, '$lt': stop_datetime}}, {'username': username},
+                  {'session': session}]})
+    for tweet in result:
+        tweets += [Tweet.create_tweet(tweet)]
+
+    # find word document frequency
+    for tweet in tweets:
+        for word in tweet.words_map:
+            if word not in idf:
+                idf[word] = 0
+            idf[word] += 1
+
+    words = list(idf.keys())
+    word_indexes = {}
+    index = 0
+    for word in idf.keys():
+        word_indexes[word] = index
+        index += 1
+
+    index = 0
+    row = []
+    col = []
+    data = []
+
+    # prepare the data for nmf model
+    for tweet in tweets:
+        for word in tweet.words_map:
+            row += [index]
+            col += [word_indexes[word]]
+            data += [(tweet.words_map[word] / tweet.words_count) *
+                     math.log(tweets.__len__() / idf[word])]
+        index += 1
+    row = np.array(row)
+    col = np.array(col)
+    data = np.array(data)
+
+    print("ceva")
+
+
 def create_and_store_topics(username, params, progress_tracker):
 
     with open('../users/' + username+'/config.json') as data_file:
@@ -115,6 +170,7 @@ def create_and_store_topics(username, params, progress_tracker):
     config['topics']['topic_words_nr'] = params['topic_words_nr']
     config['topics']['tweet_per_topic'] = params['tweet_per_topic']
     config['topics']['tweet_threshold'] = params['tweet_threshold']
+    config['tweets']['threads_number'] = params['threads']
     session_number = params['session']
 
     with open('../users/' + username + '/config.json', 'w') as outfile:
@@ -149,17 +205,17 @@ def create_and_store_topics(username, params, progress_tracker):
     # start tf-idf and nmf
     start = time.time()
     while start_datetime <= limit_datetime:
-        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username, session_number)]
+        futures += [executor.submit(compute_lda, config, start_datetime, stop_datetime, username, session_number)]
 
         start_datetime += datetime.timedelta(minutes=10)
         stop_datetime += datetime.timedelta(minutes=10)
         task_number += 1
         if task_number % concurrent_tasks == 0:
             for future in futures:
+                print(task_number, " ", futures.__len__(), " ", concurrent_tasks)
                 future.result()
                 progress_tracker[username] = min(progress_tracker[username] + 100 / periods,
                                                  98.0)
-            task_number = 0
             futures = []
 
     for future in futures:
