@@ -283,9 +283,9 @@ function create_topics(state) {
             'tweet_per_topic': $j("#slider-tweet_topic").slider("value"),
             'tweet_threshold': $j("#slider-tweet_threshold").slider("value"),
             'threads': $j("#slider-threads").slider("value"),
+            'method': $('input[name=methods]:checked').val(),
             'session': $("#sel1").val()
         });
-
         state['clicked'] = true;
         request.onreadystatechange = function () {
             if (request.readyState == 4 && request.status == 200) {
@@ -513,10 +513,10 @@ function setSliders(config) {
 
 
      $j( "#slider-threshold" ).slider({
-     min: 0.1,
+     min: 0.01,
      max: 1,
      value:  config['events']['merge_threshold'],
-     step: 0.1,
+     step: 0.01,
      slide: function( event, ui ) {
      document.getElementById("slider-threshold").parentNode.firstElementChild.innerHTML = "Topic Merging Threshold: " + ui.value;
      }
@@ -526,10 +526,10 @@ function setSliders(config) {
 }
 function setEventSlider(config) {
      $j( "#slider-granularity" ).slider({
-     min: 0.05,
+     min: 0.01,
      max: 1,
      value: config['events']['granularity'],
-     step: 0.05,
+     step: 0.01,
      slide: function( event, ui ) {
      document.getElementById("slider-granularity").parentNode.firstElementChild.innerHTML = "Event Granularity: " + ui.value;
      }

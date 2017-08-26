@@ -13,7 +13,7 @@ from pymongo import MongoClient
 from load_tweets import load_tweets
 from topics import Topic
 from tweet import Tweet
-from sklearn.decomposition import NMF
+from sklearn.decomposition import NMF, LatentDirichletAllocation
 
 
 def compute_nmf(config, start_datetime, stop_datetime, username, session):
@@ -158,7 +158,44 @@ def compute_lda(config, start_datetime, stop_datetime, username, session):
     col = np.array(col)
     data = np.array(data)
 
-    print("ceva")
+    # apply lda model
+    matrix = csr_matrix((data, (row, col)), shape=(tweets.__len__(), words.__len__()))
+    lda_model = LatentDirichletAllocation(n_topics=nr_topics,
+                                    learning_method='online',
+                                    random_state=0)
+    relevant_tweets = lda_model.fit_transform(matrix).tolist()
+    topics = lda_model.components_
+
+    # extract topics and relevant tweets
+    for topic in topics:
+        topic_object = Topic(start_datetime=start_datetime, stop_datetime=stop_datetime, username=username,
+                             session=session)
+        values = topic.tolist()
+        relevant_words = {}
+        for i in range(0, values.__len__()):
+            relevant_words[words[i]] = values[i]
+        relevant_words = sorted(relevant_words.items(), key=lambda x: x[1], reverse=True)
+
+        # add relevant words
+        topic_object.relevant_words = relevant_words[0:topic_words_nr]
+        topics_list += [topic_object]
+
+    # add relevant tweets
+    index = 0
+    for tweet_per_topic in relevant_tweets:
+        tweet_topic_pairs = [(tweet_per_topic[i], i) for i in range(0, nr_topics)]
+        tweet_topic_pairs = sorted(tweet_topic_pairs, key=lambda x: x[0], reverse=True)
+        for j in range(0, tweet_per_topic_number):
+            if tweet_topic_pairs[j][0] > tweet_threshold:
+                topics_list[tweet_topic_pairs[j][1]].relevant_tweets.append(
+                    (tweet_topic_pairs[j][0], tweets[index]._id))
+
+        index += 1
+    topics_list = [topic.__dict__ for topic in topics_list]
+    topic_collection.insert(topics_list)
+
+    print("Processed topics in time interval", start_datetime, "-", stop_datetime, "consisting of", tweets.__len__(),
+          "tweets")
 
 
 def create_and_store_topics(username, params, progress_tracker):
@@ -172,6 +209,9 @@ def create_and_store_topics(username, params, progress_tracker):
     config['topics']['tweet_threshold'] = params['tweet_threshold']
     config['tweets']['threads_number'] = params['threads']
     session_number = params['session']
+
+    # get what algorithm to use in topic modeling stage
+    method = params['method']
 
     with open('../users/' + username + '/config.json', 'w') as outfile:
         json.dump(config, outfile)
@@ -205,7 +245,13 @@ def create_and_store_topics(username, params, progress_tracker):
     # start tf-idf and nmf
     start = time.time()
     while start_datetime <= limit_datetime:
-        futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username, session_number)]
+        if method == 'NMF':
+            futures += [executor.submit(compute_nmf, config, start_datetime, stop_datetime, username, session_number)]
+        elif method == 'LDA':
+            futures += [executor.submit(compute_lda, config, start_datetime, stop_datetime, username, session_number)]
+        else:
+            print('Unknown method' + method + ', abandoning request')
+            return
 
         start_datetime += datetime.timedelta(minutes=10)
         stop_datetime += datetime.timedelta(minutes=10)

@@ -6,6 +6,9 @@ import nltk
 
 
 class Tweet:
+
+    epoch_start = datetime.datetime(year=1970, month=1, day=1)
+
     def __init__(self, author="", age=0, gender="None", latitude=0,
                  longitude=0, date="", time="", raw_text="", words_count=0, words_map={}, username="", session=""):
         self.author = author
@@ -20,6 +23,8 @@ class Tweet:
                                                day=int(date_parts[2]),
                                                hour=int(time_parts[0]), minute=int(time_parts[1]),
                                                second=int(time_parts[2]))
+        else:
+            self.date_time = Tweet.epoch_start
         self.raw_text = raw_text
         self.words_count = words_count
         self.words_map = words_map
@@ -30,6 +35,12 @@ class Tweet:
     def create_tweet(entries):
         tweet = Tweet()
         tweet.__dict__.update(entries)
+        return tweet
+
+    @staticmethod
+    def create_empty_tweet(entries):
+        tweet = Tweet()
+        tweet.date_time = entries['date_time']
         return tweet
 
 

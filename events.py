@@ -17,6 +17,7 @@ def merge_topics(username, params, progress_tracker):
 
     config['events']['merge_threshold'] = params['merge_threshold']
     config['tweets']['threads_number'] = params['threads']
+    topic_words_nr = int(config['topics']['topic_words_nr'])
     session_number = params['session']
 
     with open('../users/' + username + '/config.json', 'w') as outfile:
@@ -36,17 +37,12 @@ def merge_topics(username, params, progress_tracker):
 
     start = time.time()
     topics_cursor = topic_collection.find({'username': username, 'session': session_number})
-    topics = []
-    for topic in topics_cursor:
-        topics += [Topic.create_topic(topic)]
 
     topic_clusters = []
-    print("Finished reading topics")
+    nr_topics = topic_collection.find({'username': username, 'session': session_number}).count()
 
-
-    nr_topics = topics.__len__()
-
-    for topic in topics:
+    for topic_dict in topics_cursor:
+        topic = Topic.create_topic(topic_dict)
         result = 0
         assign_cluster = None
         for cluster in topic_clusters:
@@ -71,12 +67,13 @@ def merge_topics(username, params, progress_tracker):
 
         tweets = []
         for tweet in tweets_cursor:
-            tweets += [Tweet.create_tweet(tweet)]
-        tweets = sorted(tweets, key=operator.attrgetter('date_time'))
+            tweets += [Tweet.create_empty_tweet(tweet)]
         date_hour_dict = {}
         for tweet in tweets:
             hour = datetime.time(hour=tweet.date_time.hour)
             date = tweet.date_time.date()
+            if date == Tweet.epoch_start:
+                continue
             date_hour = datetime.datetime.combine(date, hour)
             if date_hour not in date_hour_dict:
                 date_hour_dict[date_hour] = 0
@@ -86,12 +83,6 @@ def merge_topics(username, params, progress_tracker):
         for date in date_hour_dict:
             values[date_hour_list.index(date)] = date_hour_dict[date]
 
-        # max_value = max(values)
-        # occurrences = 0
-        # for value in values:
-        #     if float(value) > max_value/10:
-        #         occurrences += 1
-        # if occurrences/values.__len__() < granularity:
         result[str(index)] = {}
         result[str(index)]['x'] = [date_hour.isoformat() for date_hour in date_hour_list]
         result[str(index)]['y'] = values
