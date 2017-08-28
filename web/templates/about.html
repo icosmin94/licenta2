@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+     <title>
+        Licenta Iacob Cosmin-George
+    </title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type = "text/javascript"
+         src = "{{ url_for('static', filename = 'bootstrap/js/bootstrap.js') }}" ></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script type = "text/javascript"
+         src = "{{ url_for('static', filename = 'javascript.js') }}" ></script>
+
+</head>
+<body>
+   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'style.css') }}">
+
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Anomaly and Event Detection</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li ><a href="/">DashBoard</a></li>
+            <li><a href="/">Results</a></li>
+            <li class="active"><a href="/about">About</a></li>
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+            <li><a href="/"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+     <div class="container-fluid">
+
+         <div class="row" style="margin-top: 80px;">
+             <div class="col-xs-5 col-xs-offset-1 special_element2">
+              <h2 class="text-center">About the project</h2>
+                 <p style="margin-top: 20px;">
+                      &ensp;&ensp;&ensp;&ensp;  This web application is designed to be a useful tool in the task of
+                     detecting events and anomalies in social media messages.
+                     It's development has been focused on analyzing Twitter data streams. It uses Python as
+                     back-end language, the data is stored in a NoSql database, MongoDb,
+                     and the graphical interface is made primarily with Jquery and Boostrap.
+                 </p>
+                 <p style="margin-top: 20px;">
+                      &ensp;&ensp;&ensp;&ensp; After a user logs in or creates a new account, in the
+                     DashBoard page he can upload a file which contains the data he wishes to analyze, set his
+                     own custom configuration and go threw the steps of the application.
+                        The Results of this processing can be viewed in the Results page.
+                 </p>
+             </div>
+             <div class="col-xs-4  col-xs-offset-1 special_element2">
+                  <h2 class="text-center">Author Information</h2>
+                 <div class="row">
+                     <div class="col-xs-4">
+                         <img src="{{ url_for('static', filename = 'user.png') }}" height="150" width="150" >
+                     </div>
+                     <div class="col-xs-5" style="margin-top: 15px;">
+                         <p> <b>Name: </b>Iacob Cosmin-George</p>
+                         <p> <b>Phone Number: </b>0724476693</p>
+                         <p> <b>Email: </b>i.cosmin94@yahoo.com</p>
+                     </div>
+
+                 </div>
+
+             </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

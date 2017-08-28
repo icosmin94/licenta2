@@ -28,7 +28,29 @@ def pagina():
 
 @app.route('/results')
 def results():
-    return render_template('results.html', user=session['user_name'])
+    if session['user_name'] == admin['user_name']:
+        return render_template('results.html', user=session['user_name'], admin=True)
+    else:
+        return render_template('results.html', user=session['user_name'], admin=False)
+
+
+@app.route('/about')
+def get_about():
+    if 'user_name' in session:
+        if session['user_name'] == admin['user_name']:
+            return render_template('logged_in_about.html', user=session['user_name'], admin=True)
+        else:
+            return render_template('logged_in_about.html', user=session['user_name'], admin=False)
+    else:
+        return render_template('about.html')
+
+
+@app.route('/admin_board')
+def get_admin_board():
+    if 'user_name' in session and session['user_name'] == admin['user_name']:
+        return render_template('admin_board.html', user=session['user_name'])
+    else:
+        return redirect(url_for('board'))
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -130,7 +152,10 @@ def clean_up(username, session_number):
 
 @app.route('/board', methods=['POST', 'GET'])
 def board():
-    return render_template('new_board.html', user=session['user_name'])
+    if session['user_name'] == admin['user_name']:
+        return render_template('new_board.html', user=session['user_name'], admin=True)
+    else:
+        return render_template('new_board.html', user=session['user_name'])
 
 
 @app.route('/get_config', methods=['POST'])
@@ -196,22 +221,28 @@ def check_credentials():
             users.insert_one({'user_name': signup_username, 'user_email': signup_email, 'password': signup_password})
             session['user_name'] = signup_username
             progress_tracker[signup_username] = 0
-            if not os.path.exists("../users/" + signup_username):
-                os.makedirs("../users/" + signup_username)
-                os.chmod(os.path.abspath("../users/" + signup_username+"/"), 0o777)
-                copy('../config/config.json', os.path.abspath("../users/" + signup_username+"/"))
-            if not os.path.exists("../users/" + signup_username + "/files"):
-                os.makedirs("../users/" + signup_username + "/files")
-                os.chmod("../users/" + signup_username + "/files/", 0o777)
+            make_user_dirs(signup_username)
             return render_template('response.html', message="ok")
         else:
             return render_template('response.html', message="error")
 
     return render_template('response.html', message="error")
 
+
+def make_user_dirs(user_name):
+    if not os.path.exists("../users/" + user_name):
+        os.makedirs("../users/" + user_name)
+        os.chmod(os.path.abspath("../users/" + user_name + "/"), 0o777)
+        copy('../config/config.json', os.path.abspath("../users/" + user_name + "/"))
+    if not os.path.exists("../users/" + user_name + "/files"):
+        os.makedirs("../users/" + user_name + "/files")
+        os.chmod("../users/" + user_name + "/files/", 0o777)
+
 if __name__ == '__main__':
     with open('../config/config.json') as data_file:
         config = json.load(data_file)
+    with open('../config/admin.json') as admin_file:
+        admin = json.load(admin_file)
 
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
@@ -220,6 +251,11 @@ if __name__ == '__main__':
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
     topic_collection = db[config['topics']['topic_collection_name']]
     event_collection = db['events']
+
+    result = users.find_one({"$and": [{'user_name': admin['user_name']}]})
+    if result is None:
+        users.insert_one(admin)
+        make_user_dirs(admin['user_name'])
 
     progress_tracker = {}
     app.secret_key = "igiogyufo8g5re4wa6w9uh809y6r74s46zi7do8n,-9=u,u8jhub5d64w 53a5cs5e87rv7b896n98709m09m087y0880m" \

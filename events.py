@@ -11,6 +11,11 @@ from topics import Topic
 from tweet import Tweet
 
 
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
 def merge_topics(username, params, progress_tracker):
     with open('../users/' + username + '/config.json') as data_file:
         config = json.load(data_file)
@@ -63,11 +68,13 @@ def merge_topics(username, params, progress_tracker):
 
     for cluster in topic_clusters:
         topic_tweet_ids = [tweet_tuple[1] for tweet_tuple in cluster.relevant_tweets]
-        tweets_cursor = tweets_collection.find({"_id": {"$in": topic_tweet_ids}})
-
         tweets = []
-        for tweet in tweets_cursor:
-            tweets += [Tweet.create_empty_tweet(tweet)]
+
+        for batch in chunks(topic_tweet_ids, 50000):
+            tweets_cursor = tweets_collection.find({"_id": {"$in": batch}})
+            for tweet in tweets_cursor:
+                tweets += [Tweet.create_empty_tweet(tweet)]
+
         date_hour_dict = {}
         for tweet in tweets:
             hour = datetime.time(hour=tweet.date_time.hour)

@@ -34,8 +34,8 @@
         <div class="collapse navbar-collapse" id="myNavbar">
           <ul class="nav navbar-nav">
             <li ><a href="/">DashBoard</a></li>
-            <li class="active"><a href="/results">Results</a></li>
-            {% if admin %} <li><a href="/admin_board">Admin Board</a></li>{% endif %}
+            <li ><a href="/results">Results</a></li>
+            <li class="active"><a href="/admin_board">Admin Board</a></li>
             <li ><a href="/about">About</a></li>
 
           </ul>
@@ -46,49 +46,5 @@
         </div>
       </div>
     </nav>
-
-    <div class="container-fluid">
-
-        <div class="row" id="session_row_1">
-            <div class="col-sm-4 col-sm-offset-1">
-
-                <div class="form-group">
-                  <label for="sel1">Choose a Session</label>
-                  <select class="form-control" id="sel1" >
-                  </select>
-                </div>
-            </div>
-        </div>
-
-         <div class="row">
-             <div class="col-md-3 col-md-offset-1 command_div">
-                <div class="row">
-                     <div class="col-xs-8 col-xs-offset-2 special_element2">
-                          <h4 class="text-center"> Event Detection Stage</h4>
-
-                     </div>
-                 </div>
-                 <div class="row">
-                         <div class="col-xs-10 col-xs-offset-1 special_element2">
-                             <h5 class="slider-value">Event Granularity</h5>
-                             <div id = "slider-granularity"></div>
-                         </div>
-                 </div>
-                 <div class="row">
-                     <div class="col-xs-12 text-center special_element">
-                         <button class="btn btn-primary command-button" id="show_events">Detect Events</button>
-                     </div>
-                 </div>
-            </div>
-             <div class="col-md-6" style="margin-left: 20px;">
-                  <label for="events">Detected Events</label>
-                  <div class="graphs" id="events">
-
-                  </div>
-             </div>
-
-         </div>
-
-    </div>
 </body>
 </html>
