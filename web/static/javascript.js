@@ -32,7 +32,7 @@ $(document).ready(function () {
 
     var state = {'clicked': false};
     var config;
-    if (location.pathname.substring(1).includes("board")) {
+    if (location.pathname.substring(1).includes("dash_board")) {
         setInterval(get_progress, 1000);
         set_session_functionality(state);
         var request = new XMLHttpRequest();
@@ -63,6 +63,10 @@ $(document).ready(function () {
         request.send("jsonData=" + params);
     }
 
+     if (location.pathname.substring(1).includes("admin_board")) {
+        show_users_functionality();
+     }
+
 
     $(document).on("click", "#load_tweets", function () {
         load_tweets(state);
@@ -78,6 +82,86 @@ $(document).ready(function () {
     });
 
 });
+
+function show_users_functionality() {
+    $("#show_users").on("click", function () {
+        var request = new XMLHttpRequest();
+        request.open("POST", "/show_users", true);
+        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        var params = JSON.stringify({'action': 'show_users'});
+         request.onreadystatechange = function () {
+             console.log(request.responseText);
+             var responseJson = JSON.parse(request.responseText);
+             var users = responseJson['users'];
+              $("#sel2").empty();
+              var nr_sessions = responseJson['nr_sessions'];
+              var nr_topics = responseJson['nr_topics'];
+              var nr_tweets = responseJson['nr_tweets'];
+              $("#td_user").html(users[0]);
+              $("#td_session").html(nr_sessions);
+              $("#td_tweets").html(nr_tweets);
+              $("#td_topics").html(nr_topics);
+
+              $.each(users, function (index, value) {
+                    $('<option>').text(value).appendTo($("#sel2"));
+              });
+         };
+        request.send("jsonData=" + params);
+    });
+    $("#sel2").on('change', function() {
+         var request = new XMLHttpRequest();
+         request.open("POST", "/show_user_details", true);
+         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+         var user = this.value;
+         request.onreadystatechange = function () {
+              console.log(request.responseText);
+              var responseJson = JSON.parse(request.responseText);
+              var nr_sessions = responseJson['nr_sessions'];
+              var nr_topics = responseJson['nr_topics'];
+              var nr_tweets = responseJson['nr_tweets'];
+              $("#td_user").html(user);
+              $("#td_session").html(nr_sessions);
+              $("#td_tweets").html(nr_tweets);
+              $("#td_topics").html(nr_topics);
+         };
+         request.send("user=" + user);
+    });
+    $("#delete_user").on("click", function () {
+        var request = new XMLHttpRequest();
+         request.open("POST", "/delete_user", true);
+         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+         var user = $("#sel2").find(":selected").text();
+          request.onreadystatechange = function () {
+              console.log(request.responseText);
+          };
+         request.send("user=" + user);
+    });
+
+    $("#delete_user_data").on("click", function () {
+        var request = new XMLHttpRequest();
+         request.open("POST", "/delete_user_data", true);
+         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+         var user = $("#sel2").find(":selected").text();
+          request.onreadystatechange = function () {
+              console.log(request.responseText);
+          };
+         request.send("user=" + user);
+    });
+
+    $("#drop_all_tables").on("click", function () {
+        var request = new XMLHttpRequest();
+         request.open("POST", "/drop_all_tables", true);
+         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+         var user = $("#sel2").find(":selected").text();
+          request.onreadystatechange = function () {
+              console.log(request.responseText);
+          };
+         request.send("user=" + user);
+    });
+
+
+
+}
 
 function set_session_functionality(state) {
     $("#create_session").on("click", function () {
@@ -363,7 +447,7 @@ function login() {
         if (request.readyState == 4 && request.status == 200) {
             console.log(request.responseText);
             if (request.responseText == "ok") {
-                window.location.href = "/board";
+                window.location.href = "/dash_board";
             } else {
                 $("#error_message").html("<strong>Error ! </strong> Incorrect Username or Password")
                 $("#error_message").css("visibility", "visible");
@@ -404,7 +488,7 @@ function signup() {
         if (request.readyState == 4 && request.status == 200) {
             console.log(request.responseText);
             if (request.responseText == "ok") {
-                window.location.href = "/board";
+                window.location.href = "/dash_board";
             } else {
                 $("#error_message").html("<strong>Error ! </strong> Sign Up failed. Username or email already exists")
                 $("#error_message").css("visibility", "visible");

@@ -50,7 +50,7 @@ def get_admin_board():
     if 'user_name' in session and session['user_name'] == admin['user_name']:
         return render_template('admin_board.html', user=session['user_name'])
     else:
-        return redirect(url_for('board'))
+        return redirect(url_for('dashboard'))
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -63,7 +63,7 @@ def index():
             return render_template('signup_form.html')
     else:
         if session.get('user_name'):
-            return redirect(url_for('board'))
+            return redirect(url_for('dashboard'))
         else:
             return render_template('pagina.html')
 
@@ -119,6 +119,69 @@ def create_session():
     return jsonify({'sessions': sessions_list})
 
 
+@app.route('/show_users', methods=['POST'])
+def show_users():
+    result = users.find()
+    users_list = []
+    for user in result:
+        users_list += [user['user_name']]
+    first_user = users_list[0]
+    session_doc = session_collection.find_one({'user_name': first_user})
+    if session_doc is None:
+        nr_sessions = 0
+    else:
+        nr_sessions = session_doc['sessions'].__len__()
+    nr_topics = topic_collection.find({'username': first_user}).count()
+    nr_tweets = tweets_collection.find({'username': first_user}).count()
+    return jsonify({'users': users_list, 'nr_sessions': nr_sessions, 'nr_topics': nr_topics, 'nr_tweets': nr_tweets})
+
+
+@app.route('/show_user_details', methods=['POST'])
+def show_user_details():
+    user = request.form['user']
+    session_doc = session_collection.find_one({'user_name': user})
+    if session_doc is None:
+        nr_sessions = 0
+    else:
+        nr_sessions = session_doc['sessions'].__len__()
+    nr_topics = topic_collection.find({'username': user}).count()
+    nr_tweets = tweets_collection.find({'username': user}).count()
+    return jsonify({'nr_sessions': nr_sessions, 'nr_topics': nr_topics, 'nr_tweets': nr_tweets})
+
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    user = request.form['user']
+    if user != admin['user_name']:
+        session_collection.remove({'user_name': user})
+        topic_collection.remove({'username': user})
+        tweets_collection.remove({'username': user})
+        users.remove({'user_name': user})
+        return render_template('response.html', message="ok")
+    return render_template('response.html', message="not_ok")
+
+
+@app.route('/delete_user_data', methods=['POST'])
+def delete_user_data():
+    user = request.form['user']
+
+    topic_collection.remove({'username': user})
+    tweets_collection.remove({'username': user})
+    session_collection.remove({'user_name': user})
+
+    return render_template('response.html', message="ok")
+
+
+@app.route('/drop_all_tables', methods=['POST'])
+def drop_all_tables():
+
+    topic_collection.drop()
+    tweets_collection.drop()
+    session_collection.drop()
+
+    return render_template('response.html', message="ok")
+
+
 @app.route('/show_session', methods=['POST'])
 def show_session():
     sessions = db['sessions']
@@ -150,8 +213,8 @@ def clean_up(username, session_number):
     print("Deleting data for user:", username, " session:", session_number)
 
 
-@app.route('/board', methods=['POST', 'GET'])
-def board():
+@app.route('/dash_board', methods=['POST', 'GET'])
+def dashboard():
     if session['user_name'] == admin['user_name']:
         return render_template('new_board.html', user=session['user_name'], admin=True)
     else:
@@ -247,6 +310,7 @@ if __name__ == '__main__':
     client = MongoClient(config['database']['host'], int(config['database']['port']))
     db = client[config['database']['db']]
     users = db['users']
+    session_collection = db['sessions']
     tweets_collection = db[config['tweets']['collection_name']]
     date_hour_collection = db[config['tweets']['date_hour_collection_name']]
     topic_collection = db[config['topics']['topic_collection_name']]

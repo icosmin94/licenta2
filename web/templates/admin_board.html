@@ -52,22 +52,22 @@
              <div class="col-md-4 col-md-offset-1">
                  <div class="row" style="margin-bottom: 20px;">
                      <div class="col-sm-11 col-sm-offset-1">
-                          <button class="btn btn-primary admin-button">Show Users</button>
+                          <button class="btn btn-primary admin-button" id="show_users">Show Users</button>
                      </div>
                 </div>
                  <div class="row" style="margin-bottom: 20px;">
                      <div class="col-sm-11 col-sm-offset-1">
-                          <button class="btn btn-success admin-button">Delete User</button>
+                          <button class="btn btn-success admin-button" id="delete_user">Delete User</button>
                      </div>
                 </div>
                  <div class="row" style="margin-bottom: 20px;">
                      <div class="col-sm-11 col-sm-offset-1">
-                          <button class="btn btn-success admin-button">Delete User Data</button>
+                          <button class="btn btn-success admin-button" id="delete_user_data">Delete User Data</button>
                      </div>
                 </div>
                  <div class="row" style="margin-bottom: 20px;">
                      <div class="col-sm-11 col-sm-offset-1">
-                          <button class="btn btn-warning admin-button">Drop All Tables</button>
+                          <button class="btn btn-warning admin-button" id="drop_all_tables">Drop All Tables</button>
                      </div>
                 </div>
             </div>
@@ -96,9 +96,10 @@
                             </thead>
                             <tbody>
                               <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td id="td_user"></td>
+                                <td id="td_session"></td>
+                                <td id="td_tweets"></td>
+                                <td id="td_topics"></td>
                               </tr>
                             </tbody>
                           </table>
