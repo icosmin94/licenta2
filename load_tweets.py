@@ -135,7 +135,7 @@ def load_tweets(username, filename, params, progress_tracker):
 
     if previous_date_hour is not None:
         date_hour_list = list(set(previous_date_hour['dates'] + date_hour_list))
-        date_hour_collection.drop()
+        date_hour_collection.remove({'username': username, 'session': session_number})
     date_hour_collection.insert({"dates": date_hour_list, 'username': username, 'session': session_number})
 
     progress_tracker[username] = 100

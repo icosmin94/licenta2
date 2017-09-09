@@ -10,7 +10,6 @@ import pymongo
 from scipy.sparse import csr_matrix
 import math
 from pymongo import MongoClient
-from load_tweets import load_tweets
 from topics import Topic
 from tweet import Tweet
 from sklearn.decomposition import NMF, LatentDirichletAllocation
@@ -226,7 +225,7 @@ def create_and_store_topics(username, params, progress_tracker):
     topic_collection.remove({"username": username, "session": session_number})
     executor = ProcessPoolExecutor(max_workers=concurrent_tasks)
 
-    date_hour_list = date_hour_collection.find_one()['dates']
+    date_hour_list = date_hour_collection.find_one({'username': username, 'session': session_number})
     date_hour_list.sort()
     futures = []
     task_number = 0
